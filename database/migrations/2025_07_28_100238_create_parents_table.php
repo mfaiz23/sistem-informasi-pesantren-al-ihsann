@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('nama_ibu');
             $table->string('pekerjaan_ibu');
             $table->string('pendidikan_ibu');
+            $table->string('no_hp_orang_tua'); 
             $table->timestamps();
         });
     }

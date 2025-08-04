@@ -6,7 +6,8 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
+                        {{-- GANTI KODE LOGO LAMA DENGAN INI --}}
+                        <img class="block h-10 w-auto" src="{{ asset('assets/images/logo.png') }}" alt="Logo Pesantren">
                     </a>
                 </div>
 
@@ -15,8 +16,6 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-
-                    {{-- ===== TAUTAN BARU UNTUK DESKTOP ===== --}}
                     <x-nav-link :href="route('formulir.create')" :active="request()->routeIs('formulir.create')">
                         {{ __('Formulir') }}
                     </x-nav-link>
@@ -82,8 +81,6 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-
-            {{-- ===== TAUTAN BARU UNTUK MOBILE ===== --}}
             <x-responsive-nav-link :href="route('formulir.create')" :active="request()->routeIs('formulir.create')">
                 {{ __('Formulir') }}
             </x-responsive-nav-link>

@@ -40,6 +40,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // Rute Formulir Pendaftaran (DITAMBAHKAN)
     Route::get('/formulir', [FormulirController::class, 'create'])->name('formulir.create');
+    
+    // Rute untuk menyimpan data formulir (DITAMBAHKAN)
+    Route::post('/formulir', [FormulirController::class, 'store'])->name('formulir.store');
 });
 
 
