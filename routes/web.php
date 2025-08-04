@@ -31,13 +31,17 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::get('/dashboard_admin', function () {
+    return view('admin.dashboard'); // Mencari di resources/views/admin/dashboard.blade.php
+});
+
 // Grup rute profil sekarang juga dilindungi oleh verifikasi email
 Route::middleware(['auth', 'verified'])->group(function () {
     // Rute Profil
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    
+
     // Rute Formulir Pendaftaran (DITAMBAHKAN)
     Route::get('/formulir', [FormulirController::class, 'create'])->name('formulir.create');
     
