@@ -21,12 +21,12 @@ class CustomVerifyEmail extends VerifyEmailBase
         if (static::$toMailCallback) {
             return call_user_func(static::$toMailCallback, $notifiable, $verificationUrl);
         }
-
         return (new MailMessage)
-            // Ganti teks di bawah ini sesuai keinginan Anda
-            ->subject(Lang::get('Verifikasi Alamat Email Anda'))
-            ->line(Lang::get('Selamat datang! Mohon klik tombol di bawah untuk memverifikasi alamat email Anda.'))
-            ->action(Lang::get('Verifikasi Email'), $verificationUrl)
-            ->line(Lang::get('Jika Anda tidak merasa membuat akun ini, Anda dapat mengabaikan email ini.'));
+        ->subject(Lang::get('Verifikasi Alamat Email Anda'))
+        ->greeting('Assalamualaikum, Calon Santri!') 
+        ->line(Lang::get('Terima kasih sudah mendaftar. Mohon klik tombol di bawah untuk memverifikasi alamat email Anda.'))
+        ->action(Lang::get('Verifikasi Email'), $verificationUrl)
+        ->line(Lang::get('Jika Anda tidak merasa membuat akun ini, Anda dapat mengabaikan email ini.'))
+        ->salutation('Hormat kami, PSB Al-Ihsan'); 
     }
 }

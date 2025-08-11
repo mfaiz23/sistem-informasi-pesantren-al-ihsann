@@ -1,121 +1,117 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Formulir Pendaftaran Calon Santri') }}
+            {{ __('Formulir Pendaftaran') }}
         </h2>
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+
+            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
+                <p>Mohon isi formulir pendaftaran dengan benar!</p>
+            </div>
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 md:p-8 text-gray-900">
+                    @if ($errors->any())
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6"
+                            role="alert">
+                            <strong class="font-bold">Oops! Ada yang salah:</strong>
+                            <ul class="mt-2 list-disc list-inside">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
 
-                    <form method="POST" action="{{ route('formulir.store') }}">
+                    <form method="POST" action="{{ route('formulir.store') }}" enctype="multipart/form-data">
                         @csrf
 
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">A. Data Diri Calon Santri</h3>
+                        @include('formulir.partials.data-pribadi')
+                        @include('formulir.partials.asal-sekolah')
+                        @include('formulir.partials.alamat')
+                        @include('formulir.partials.data-orang-tua')
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                            <!-- Nama Lengkap (terisi otomatis & terkunci) -->
-                            <div>
-                                <x-input-label for="name" :value="__('Nama Lengkap')" />
-                                <x-text-input id="name" class="block mt-1 w-full bg-gray-100" type="text" name="name"
-                                    :value="$user->name" disabled />
-                            </div>
-
-                            <!-- Email (terisi otomatis & terkunci) -->
-                            <div>
-                                <x-input-label for="email" :value="__('Email')" />
-                                <x-text-input id="email" class="block mt-1 w-full bg-gray-100" type="email" name="email"
-                                    :value="$user->email" disabled />
-                            </div>
-
-                            <!-- Jenis Kelamin -->
-                            <div>
-                                <x-input-label for="jenis_kelamin" :value="__('Jenis Kelamin')" />
-                                <select id="jenis_kelamin" name="jenis_kelamin"
-                                    class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                                    required>
-                                    <option value="" disabled selected>Pilih Jenis Kelamin</option>
-                                    <option value="Laki-laki" @if(old('jenis_kelamin') == 'Laki-laki') selected @endif>
-                                        Laki-laki</option>
-                                    <option value="Perempuan" @if(old('jenis_kelamin') == 'Perempuan') selected @endif>
-                                        Perempuan</option>
-                                </select>
-                                <x-input-error :messages="$errors->get('jenis_kelamin')" class="mt-2" />
-                            </div>
-
-                            <!-- Tempat Lahir -->
-                            <div>
-                                <x-input-label for="tempat_lahir" :value="__('Tempat Lahir')" />
-                                <x-text-input id="tempat_lahir" class="block mt-1 w-full" type="text"
-                                    name="tempat_lahir" :value="old('tempat_lahir')" required />
-                                <x-input-error :messages="$errors->get('tempat_lahir')" class="mt-2" />
-                            </div>
-
-                            <!-- Tanggal Lahir -->
-                            <div>
-                                <x-input-label for="tanggal_lahir" :value="__('Tanggal Lahir')" />
-                                <x-text-input id="tanggal_lahir" class="block mt-1 w-full" type="date"
-                                    name="tanggal_lahir" :value="old('tanggal_lahir')" required />
-                                <x-input-error :messages="$errors->get('tanggal_lahir')" class="mt-2" />
-                            </div>
-                        </div>
-
-                        <hr class="my-8">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">B. Informasi Pendaftaran</h3>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Asal Sekolah -->
-                            <div class="md:col-span-2">
-                                <x-input-label for="asal_sekolah" :value="__('Asal Sekolah')" />
-                                <x-text-input id="asal_sekolah" class="block mt-1 w-full" type="text"
-                                    name="asal_sekolah" :value="old('asal_sekolah')" required />
-                                <x-input-error :messages="$errors->get('asal_sekolah')" class="mt-2" />
-                            </div>
-
-                            <!-- Kategori Pendaftaran -->
-                            <div>
-                                <x-input-label for="kategori_pendaftaran" :value="__('Kategori Pendaftaran')" />
-                                <select id="kategori_pendaftaran" name="kategori_pendaftaran"
-                                    class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                                    <option value="Reguler">Reguler</option>
-                                    <option value="Non-Reguler">Non-Reguler (KIP)</option>
-                                </select>
-                                <x-input-error :messages="$errors->get('kategori_pendaftaran')" class="mt-2" />
-                            </div>
-
-                            <!-- Nomor Ijazah (Opsional) -->
-                            <div>
-                                <x-input-label for="no_ijazah" :value="__('Nomor Ijazah (jika ada)')" />
-                                <x-text-input id="no_ijazah" class="block mt-1 w-full" type="text" name="no_ijazah"
-                                    :value="old('no_ijazah')" />
-                                <x-input-error :messages="$errors->get('no_ijazah')" class="mt-2" />
-                            </div>
-
-                            <!-- No. Telp Orang Tua -->
-                            <div class="md:col-span-2">
-                                <x-input-label for="no_telp_orang_tua" :value="__('Nomor Telepon Orang Tua/Wali')" />
-                                <x-text-input id="no_telp_orang_tua" class="block mt-1 w-full" type="tel"
-                                    name="no_telp_orang_tua" :value="old('no_telp_orang_tua')" required
-                                    oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
-
-                                <x-input-error :messages="$errors->get('no_telp_orang_tua')" class="mt-2" />
-                            </div>
-                        </div>
-
-
-                        <div class="flex items-center justify-end mt-6">
-                            <x-primary-button>
-                                {{ __('Simpan & Lanjutkan') }}
+                        <div class="flex justify-center mt-8">
+                            <x-primary-button class="bg-[#5CC56C] hover:bg-[#4AAE5A]">
+                                {{ __('SIMPAN DATA') }}
                             </x-primary-button>
                         </div>
-
                     </form>
-
                 </div>
             </div>
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const provinsiSelect = document.getElementById('provinsi');
+                const kotaSelect = document.getElementById('kota_kabupaten');
+                const kecamatanSelect = document.getElementById('kecamatan');
+                const desaSelect = document.getElementById('desa_kelurahan');
+
+                const apiBaseUrl = 'https://www.emsifa.com/api-wilayah-indonesia/api';
+
+                // Fungsi untuk mengisi dropdown
+                function populateSelect(selectElement, data, nameField, idField) {
+                    selectElement.innerHTML = `<option value="" disabled selected>Pilih ${selectElement.previousElementSibling.innerText}</option>`;
+                    data.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item[idField];
+                        option.textContent = item[nameField];
+                        selectElement.appendChild(option);
+                    });
+                }
+
+                // 1. Ambil data Provinsi saat halaman dimuat
+                fetch(`${apiBaseUrl}/provinces.json`)
+                    .then(response => response.json())
+                    .then(provinces => {
+                        populateSelect(provinsiSelect, provinces, 'name', 'id');
+                    });
+
+                // 2. Event listener untuk Provinsi
+                provinsiSelect.addEventListener('change', function () {
+                    const provinceId = this.value;
+                    kotaSelect.innerHTML = '<option value="" disabled selected>Memuat...</option>';
+                    kecamatanSelect.innerHTML = '<option value="" disabled selected>Pilih Kecamatan</option>';
+                    desaSelect.innerHTML = '<option value="" disabled selected>Pilih Desa/Kelurahan</option>';
+
+                    fetch(`${apiBaseUrl}/regencies/${provinceId}.json`)
+                        .then(response => response.json())
+                        .then(regencies => {
+                            populateSelect(kotaSelect, regencies, 'name', 'id');
+                        });
+                });
+
+                // 3. Event listener untuk Kota/Kabupaten
+                kotaSelect.addEventListener('change', function () {
+                    const regencyId = this.value;
+                    kecamatanSelect.innerHTML = '<option value="" disabled selected>Memuat...</option>';
+                    desaSelect.innerHTML = '<option value="" disabled selected>Pilih Desa/Kelurahan</option>';
+
+                    fetch(`${apiBaseUrl}/districts/${regencyId}.json`)
+                        .then(response => response.json())
+                        .then(districts => {
+                            populateSelect(kecamatanSelect, districts, 'name', 'id');
+                        });
+                });
+
+                // 4. Event listener untuk Kecamatan
+                kecamatanSelect.addEventListener('change', function () {
+                    const districtId = this.value;
+                    desaSelect.innerHTML = '<option value="" disabled selected>Memuat...</option>';
+
+                    fetch(`${apiBaseUrl}/villages/${districtId}.json`)
+                        .then(response => response.json())
+                        .then(villages => {
+                            populateSelect(desaSelect, villages, 'name', 'id');
+                        });
+                });
+            });
+        </script>
+    @endpush
 </x-app-layout>

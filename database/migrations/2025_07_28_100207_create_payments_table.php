@@ -17,7 +17,7 @@ return new class extends Migration
             
             // Kolom yang disesuaikan dengan ERD
             $table->enum('jenis_pembayaran', ['formulir', 'pangkal', 'lainnya']);
-            $table->decimal('jumlah', 10, 2); // Menggunakan decimal untuk nilai uang
+            $table->decimal('jumlah', 10, 2); 
             $table->enum('metode', ['midtrans'])->default('midtrans');
             
             // Info dari Midtrans

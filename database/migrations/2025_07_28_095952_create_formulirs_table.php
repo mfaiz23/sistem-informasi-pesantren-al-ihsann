@@ -6,37 +6,41 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('formulirs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
 
-            $table->string('nik', 20);
+            // Data Pribadi
+            $table->string('nama_panggilan');
             $table->string('tempat_lahir');
             $table->date('tanggal_lahir');
-            $table->string('asal_sekolah');
-            $table->enum('kategori_pendaftaran', ['Reguler', 'Non Reguler']);
-            
+            $table->enum('jenis_kelamin', ['Laki-laki', 'Perempuan']);
+            $table->string('nik', 16);
+            $table->enum('kategori_pendaftaran', ['Reguler', 'Non-Reguler']);
             $table->string('no_kip')->nullable();
-            $table->string('dokumen_kip')->nullable(); 
+            
+            // Asal Sekolah (Detail)
+            $table->string('asal_sd')->nullable();
+            $table->string('tahun_lulus_sd')->nullable();
+            $table->string('asal_smp')->nullable();
+            $table->string('tahun_lulus_smp')->nullable();
+            $table->string('asal_sma')->nullable();
+            $table->string('tahun_lulus_sma')->nullable();
+            $table->string('asal_universitas')->nullable();
+            $table->string('jurusan')->nullable();
+            $table->string('fakultas')->nullable();
+            $table->string('semester')->nullable();
+            $table->string('angkatan')->nullable();
 
-            $table->string('no_hp_orang_tua');
-            $table->boolean('pernyataan_persetujuan');
-
-            $table->enum('status_pendaftaran', ['proses', 'diterima', 'ditolak'])->default('proses');
-            $table->enum('status_pembayaran_formulir', ['menunggu_pembayaran', 'lunas', 'gagal', 'menunggu_verifikasi'])->default('menunggu_pembayaran');
+            // Status Sistem
+            $table->enum('status_pendaftaran', ['baru', 'menunggu_verifikasi', 'diverifikasi'])->default('baru');
             
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('formulirs');

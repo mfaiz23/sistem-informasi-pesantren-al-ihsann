@@ -1,54 +1,48 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\FormulirController; // <-- DITAMBAHKAN
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\FormulirController; 
+use App\Http\Controllers\ProfileController;  
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-|
-| Rute ini tidak memerlukan login sama sekali.
-|
 */
 Route::get('/', function () {
     return view('welcome');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Protected Routes
-|--------------------------------------------------------------------------
-|
-| Semua rute di bawah ini memerlukan pengguna untuk login DAN telah
-| memverifikasi alamat email mereka.
-|
-*/
-
 // Rute Dashboard sudah benar
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/dashboard_admin', function () {
-    return view('admin.dashboard'); // Mencari di resources/views/admin/dashboard.blade.php
+    return view('admin.dashboard');
 });
 
-// Grup rute profil sekarang juga dilindungi oleh verifikasi email
+/*
+|--------------------------------------------------------------------------
+| Rute yang dilindungi (Memerlukan Login & Verifikasi)
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'verified'])->group(function () {
-    // Rute Profil
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // Rute Formulir Pendaftaran (DITAMBAHKAN)
-    Route::get('/formulir', [FormulirController::class, 'create'])->name('formulir.create');
     
-    // Rute untuk menyimpan data formulir (DITAMBAHKAN)
-    Route::post('/formulir', [FormulirController::class, 'store'])->name('formulir.store');
-});
+    // --- Rute Profil (Menampilkan & Mengupdate Data Formulir) ---
+    // Menggunakan FormulirController untuk menampilkan dan memperbarui data utama
+    Route::get('/profile', [FormulirController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [FormulirController::class, 'update'])->name('profile.update');
 
+    // --- Rute Hapus Akun ---
+    // Tetap menggunakan ProfileController karena fungsinya spesifik untuk menghapus user
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // --- Rute Formulir Pendaftaran (Hanya untuk user baru) ---
+    Route::get('/formulir', [FormulirController::class, 'create'])->name('formulir.create');
+    Route::post('/formulir', [FormulirController::class, 'store'])->name('formulir.store');
+
+});
 
 // Memuat rute otentikasi dari Breeze (login, register, dll.)
 require __DIR__.'/auth.php';
