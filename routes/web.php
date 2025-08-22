@@ -1,9 +1,11 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\FormulirController; 
-use App\Http\Controllers\ProfileController;  
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FormulirController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TncController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,7 +16,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Rute Dashboard sudah benar
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -28,21 +29,30 @@ Route::get('/dashboard_admin', function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'verified'])->group(function () {
-    
-    // --- Rute Profil (Menampilkan & Mengupdate Data Formulir) ---
-    // Menggunakan FormulirController untuk menampilkan dan memperbarui data utama
+
+    // Rute Profil
     Route::get('/profile', [FormulirController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [FormulirController::class, 'update'])->name('profile.update');
-
-    // --- Rute Hapus Akun ---
-    // Tetap menggunakan ProfileController karena fungsinya spesifik untuk menghapus user
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    
-    // --- Rute Formulir Pendaftaran (Hanya untuk user baru) ---
+
+    // Rute Formulir Pendaftaran
     Route::get('/formulir', [FormulirController::class, 'create'])->name('formulir.create');
     Route::post('/formulir', [FormulirController::class, 'store'])->name('formulir.store');
 
+    // Rute Pembayaran Formulir
+    Route::get('/payment/create', [PaymentController::class, 'create'])->name('payment.create');
+
+    // Rute untuk menangani persetujuan T&C
+    Route::post('/tnc/accept', [TncController::class, 'accept'])->name('tnc.accept');
+
 });
 
-// Memuat rute otentikasi dari Breeze (login, register, dll.)
+/*
+|--------------------------------------------------------------------------
+| Rute Notifikasi Midtrans (Webhook)
+|--------------------------------------------------------------------------
+*/
+Route::post('/midtrans/notification', [PaymentController::class, 'notificationHandler'])->name('midtrans.notification');
+
+// Memuat rute otentikasi dari Breeze
 require __DIR__.'/auth.php';

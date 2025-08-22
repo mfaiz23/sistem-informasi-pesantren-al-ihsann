@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Traits\LogsChanges;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -15,7 +14,7 @@ class ParentData extends Model
      *
      * @var string
      */
-    protected $table = 'parents'; // <-- TAMBAHKAN BARIS INI
+    protected $table = 'parents';
 
     /**
      * The attributes that are mass assignable.
@@ -23,8 +22,7 @@ class ParentData extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'formulir_id', 'nama_ayah', 'no_telp_ayah',
-        'nama_ibu', 'no_telp_ibu',
-        'nama_wali', 'no_telp_wali'
+        'formulir_id', 'nama_lengkap', 'no_telp',
+        'alamat', 'hubungan_keluarga',
     ];
 }

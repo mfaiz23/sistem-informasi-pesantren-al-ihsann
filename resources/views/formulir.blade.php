@@ -35,7 +35,9 @@
                         @include('formulir.partials.data-orang-tua')
 
                         <div class="flex justify-center mt-8">
-                            <x-primary-button class="bg-[#5CC56C] hover:bg-[#4AAE5A]">
+                            <x-primary-button style="background-color: #5CC56C;"
+                                onmouseover="this.style.backgroundColor='#4AAE5A'"
+                                onmouseout="this.style.backgroundColor='#5CC56C'">
                                 {{ __('SIMPAN DATA') }}
                             </x-primary-button>
                         </div>
@@ -53,20 +55,25 @@
                 const kecamatanSelect = document.getElementById('kecamatan');
                 const desaSelect = document.getElementById('desa_kelurahan');
 
+                // Mengambil input tersembunyi
+                const provinsiNamaInput = document.getElementById('provinsi_nama');
+                const kotaNamaInput = document.getElementById('kota_kabupaten_nama');
+                const kecamatanNamaInput = document.getElementById('kecamatan_nama');
+                const desaNamaInput = document.getElementById('desa_kelurahan_nama');
+
                 const apiBaseUrl = 'https://www.emsifa.com/api-wilayah-indonesia/api';
 
-                // Fungsi untuk mengisi dropdown
                 function populateSelect(selectElement, data, nameField, idField) {
                     selectElement.innerHTML = `<option value="" disabled selected>Pilih ${selectElement.previousElementSibling.innerText}</option>`;
                     data.forEach(item => {
                         const option = document.createElement('option');
-                        option.value = item[idField];
+                        option.value = item[idField]; // Tetap gunakan ID untuk value
                         option.textContent = item[nameField];
                         selectElement.appendChild(option);
                     });
                 }
 
-                // 1. Ambil data Provinsi saat halaman dimuat
+                // 1. Ambil data Provinsi
                 fetch(`${apiBaseUrl}/provinces.json`)
                     .then(response => response.json())
                     .then(provinces => {
@@ -76,6 +83,9 @@
                 // 2. Event listener untuk Provinsi
                 provinsiSelect.addEventListener('change', function () {
                     const provinceId = this.value;
+                    // Simpan nama provinsi ke input tersembunyi
+                    provinsiNamaInput.value = this.options[this.selectedIndex].text;
+
                     kotaSelect.innerHTML = '<option value="" disabled selected>Memuat...</option>';
                     kecamatanSelect.innerHTML = '<option value="" disabled selected>Pilih Kecamatan</option>';
                     desaSelect.innerHTML = '<option value="" disabled selected>Pilih Desa/Kelurahan</option>';
@@ -90,6 +100,9 @@
                 // 3. Event listener untuk Kota/Kabupaten
                 kotaSelect.addEventListener('change', function () {
                     const regencyId = this.value;
+                    // Simpan nama kota ke input tersembunyi
+                    kotaNamaInput.value = this.options[this.selectedIndex].text;
+
                     kecamatanSelect.innerHTML = '<option value="" disabled selected>Memuat...</option>';
                     desaSelect.innerHTML = '<option value="" disabled selected>Pilih Desa/Kelurahan</option>';
 
@@ -103,6 +116,9 @@
                 // 4. Event listener untuk Kecamatan
                 kecamatanSelect.addEventListener('change', function () {
                     const districtId = this.value;
+                    // Simpan nama kecamatan ke input tersembunyi
+                    kecamatanNamaInput.value = this.options[this.selectedIndex].text;
+
                     desaSelect.innerHTML = '<option value="" disabled selected>Memuat...</option>';
 
                     fetch(`${apiBaseUrl}/villages/${districtId}.json`)
@@ -110,6 +126,12 @@
                         .then(villages => {
                             populateSelect(desaSelect, villages, 'name', 'id');
                         });
+                });
+
+                // 5. Event listener untuk Desa/Kelurahan
+                desaSelect.addEventListener('change', function () {
+                    // Simpan nama desa ke input tersembunyi
+                    desaNamaInput.value = this.options[this.selectedIndex].text;
                 });
             });
         </script>

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Payment;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -15,12 +15,16 @@ class DashboardController extends Controller
         // Ambil data formulir jika ada
         $formulir = $user->formulir;
 
-        // Di sini kita akan menambahkan logika untuk status pembayaran nanti
-        // Untuk sekarang, kita fokus pada status formulir dulu
+        // Ambil data pembayaran formulir terakhir
+        $payment = Payment::where('user_id', $user->id)
+            ->where('jenis_pembayaran', 'formulir')
+            ->latest()
+            ->first();
 
         return view('dashboard', [
             'user' => $user,
             'formulir' => $formulir,
+            'payment' => $payment,
         ]);
     }
 }

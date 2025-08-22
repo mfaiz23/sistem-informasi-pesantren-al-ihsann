@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('formulir_logs', function (Blueprint $table) {
-             $table->id();
+            $table->id();
             $table->foreignId('formulir_id')->constrained('formulirs')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users'); // FK ke tabel users
             $table->string('field_name');
