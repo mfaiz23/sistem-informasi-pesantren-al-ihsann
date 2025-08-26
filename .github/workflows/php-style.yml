@@ -2,9 +2,9 @@ name: Check Code Style
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "DashboardAdmin"]
   pull_request:
-    branches: ["main"]
+    branches: ["main", "DashboardAdmin"]
 
 jobs:
   # Pekerjaan pertama untuk memeriksa PHP

@@ -43,7 +43,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 */
 Route::middleware(['auth', 'verified'])->group(function () {
 
-
     // Rute Profil
     Route::get('/profile', [FormulirController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [FormulirController::class, 'update'])->name('profile.update');
