@@ -6,7 +6,6 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}">
-                        {{-- GANTI KODE LOGO LAMA DENGAN INI --}}
                         <img class="block h-10 w-auto" src="{{ asset('assets/images/logo.png') }}" alt="Logo Pesantren">
                     </a>
                 </div>

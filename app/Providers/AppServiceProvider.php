@@ -9,7 +9,7 @@ use Illuminate\Support\ServiceProvider;
 class AppServiceProvider extends ServiceProvider
 {
     protected $policies = [
-        Formulir::class => FormulirPolicy::class, // <-- TAMBAHKAN BARIS INI
+        Formulir::class => FormulirPolicy::class,
     ];
 
     /**
@@ -25,6 +25,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        app()->setLocale(env('APP_LOCALE', config('app.locale')));
     }
 }

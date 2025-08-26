@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class FormulirController extends Controller
@@ -33,6 +34,7 @@ class FormulirController extends Controller
         // Jika belum, tampilkan formulir kosong untuk diisi.
         return view('formulir', [
             'user' => $user,
+            'formulir' => null, // Pastikan variabel $formulir tetap dikirim, meskipun nilainya null
         ]);
     }
 
@@ -107,6 +109,10 @@ class FormulirController extends Controller
         $validatedData = $this->validateForm($request, true);
 
         if ($request->hasFile('dokumen_kip')) {
+            if ($formulir->kipDocument && $formulir->kipDocument->dokumen_path) {
+                Storage::disk('public')->delete($formulir->kipDocument->dokumen_path);
+            }
+
             $kipDocumentPath = $request->file('dokumen_kip')->store('dokumen-kip', 'public');
             $formulir->kipDocument()->updateOrCreate(
                 ['formulir_id' => $formulir->id],
@@ -140,7 +146,7 @@ class FormulirController extends Controller
             'tempat_lahir' => 'required|string|max:255',
             'tanggal_lahir' => 'required|date_format:Y-m-d|before_or_equal:today',
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
-            'nik' => 'required|string|size:16',
+            'nik' => 'required|numeric|digits:16',
             'kategori_pendaftaran' => 'required|in:Reguler,Non-Reguler',
             'no_kip' => 'required_if:kategori_pendaftaran,Non-Reguler|nullable|string|max:255',
 
@@ -163,12 +169,10 @@ class FormulirController extends Controller
             'desa_kelurahan' => 'required|string|max:255',
             'alamat_lengkap' => 'required|string',
 
-            'nama_ayah' => 'required|string|max:255',
-            'no_telp_ayah' => 'required|string|max:15',
-            'nama_ibu' => 'required|string|max:255',
-            'no_telp_ibu' => 'required|string|max:15',
-            'nama_wali' => 'nullable|string|max:255',
-            'no_telp_wali' => 'nullable|string|max:15',
+            'nama_lengkap' => 'required|string|max:255',
+            'no_telp' => 'required|string|max:15',
+            'alamat' => 'required|string',
+            'hubungan_keluarga' => 'required|string|max:255',
         ];
 
         $rules['dokumen_kip'] = $isUpdate
