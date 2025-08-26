@@ -179,7 +179,7 @@
         </div>
             </div>
 
-       <x-admin.pendaftaran-detail-modal/>
+       <x-admin.formulir.pendaftaran-detail-modal/>
        <x-admin.footer />
 
     </x-admin-layout>

@@ -1,11 +1,6 @@
-@props(['user'])
-
 {{--
-    Modal dialog untuk menampilkan detail pengguna.
-    - 'x-show="modalOpen"': Mengontrol visibilitas modal.
-    - 'x-transition': Menambahkan animasi fade-in/out.
-    - '@click.away="modalOpen = false"': Menutup modal saat mengklik di luar area konten.
-    - '@keydown.escape.window="modalOpen = false"': Menutup modal saat menekan tombol Escape.
+    File ini sudah disesuaikan untuk menampilkan data dinamis dari 'selectedUser'
+    yang dikirim oleh Alpine.js dari halaman utama.
 --}}
 <div
     x-show="modalOpen"
@@ -19,12 +14,13 @@
     aria-labelledby="modal-title"
     role="dialog"
     aria-modal="true"
-    style="display: none;" {{-- Sembunyikan secara default, Alpine.js akan menanganinya --}}
+    style="display: none;" x-cloak
 >
     {{-- Konten Modal --}}
     <div
         @click.away="modalOpen = false"
         class="w-full max-w-lg px-6 py-4 mx-auto overflow-hidden bg-white rounded-lg shadow-xl"
+        x-if="selectedUser" {{-- Pastikan selectedUser tidak null --}}
     >
         <div class="flex items-start justify-between pb-3 border-b">
             <h3 class="text-xl font-semibold text-gray-800" id="modal-title">Detail Pengguna</h3>
@@ -36,22 +32,23 @@
         {{-- Body Modal --}}
         <div class="mt-4">
             <div class="flex flex-col items-center space-y-4 sm:flex-row sm:space-y-0 sm:space-x-6">
-                {{-- Foto Profil --}}
+                {{-- Foto Profil dari ui-avatars.com berdasarkan nama --}}
                 <img class="object-cover w-24 h-24 rounded-full" :src="`https://ui-avatars.com/api/?name=${selectedUser.name.replace(' ', '+')}&background=22C55E&color=fff`" alt="Foto profil">
 
-                {{-- Info Pengguna --}}
+                {{-- Info Utama Pengguna --}}
                 <div class="flex-1 text-center sm:text-left">
                     <p class="text-2xl font-bold text-gray-800" x-text="selectedUser.name"></p>
                     <p class="text-sm text-gray-500" x-text="selectedUser.email"></p>
                     <div class="flex items-center justify-center mt-2 space-x-2 sm:justify-start">
+                        {{-- Badge Status Verifikasi --}}
                         <span class="px-2 py-1 text-xs font-semibold leading-tight rounded-full"
-                              :class="{
-                                'text-green-700 bg-green-100': selectedUser.status === 'Aktif',
-                                'text-yellow-700 bg-yellow-100': selectedUser.status !== 'Aktif'
-                              }"
-                              x-text="selectedUser.status">
+                              :class="selectedUser.email_verified_at ? 'text-green-700 bg-green-100' : 'text-yellow-700 bg-yellow-100'"
+                              x-text="selectedUser.email_verified_at ? 'Terverifikasi' : 'Belum Verifikasi'">
                         </span>
-                        <span class="px-2 py-1 text-xs font-semibold leading-tight text-blue-700 bg-blue-100 rounded-full" x-text="selectedUser.role"></span>
+                        {{-- Badge Role --}}
+                        <span class="px-2 py-1 text-xs font-semibold leading-tight text-blue-700 bg-blue-100 rounded-full"
+                              x-text="selectedUser.role === 'calon_mahasiswa' ? 'Calon Santri' : 'Admin'">
+                        </span>
                     </div>
                 </div>
             </div>
@@ -63,8 +60,12 @@
                         <dd class="mt-1 text-sm text-gray-900" x-text="selectedUser.id"></dd>
                     </div>
                     <div class="sm:col-span-1">
+                        <dt class="text-sm font-medium text-gray-500">Nomor Telepon</dt>
+                        <dd class="mt-1 text-sm text-gray-900" x-text="selectedUser.no_telp || 'Tidak ada data'"></dd>
+                    </div>
+                    <div class="sm:col-span-2">
                         <dt class="text-sm font-medium text-gray-500">Tanggal Daftar</dt>
-                        <dd class="mt-1 text-sm text-gray-900" x-text="selectedUser.date"></dd>
+                        <dd class="mt-1 text-sm text-gray-900" x-text="new Date(selectedUser.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' WIB'"></dd>
                     </div>
                 </dl>
             </div>

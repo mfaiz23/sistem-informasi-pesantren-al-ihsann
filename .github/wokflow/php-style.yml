@@ -2,4 +2,26 @@ on:
   push:
     branches: [ main, DashboardAdmin ]
   pull_request:
-    branches: [ main, DashboardAdmin ]
+    branches: [ main]
+
+jobs:
+  pint-check:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout kode dari repository Anda
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Setup PHP sesuai versi proyek Anda
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2.12' # <-- Sesuaikan dengan versi PHP di composer.json Anda
+          extensions: mbstring, xml, ctype, json, tokenizer, dom, libxml # ekstensi umum untuk laravel
+          tools: composer
+
+      - name: Install Dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Run Laravel Pint
+        run: ./vendor/bin/pint --test

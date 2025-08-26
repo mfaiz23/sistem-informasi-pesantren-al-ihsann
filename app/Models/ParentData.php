@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Traits\LogsChanges;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -25,6 +24,6 @@ class ParentData extends Model
     protected $fillable = [
         'formulir_id', 'nama_ayah', 'no_telp_ayah',
         'nama_ibu', 'no_telp_ibu',
-        'nama_wali', 'no_telp_wali'
+        'nama_wali', 'no_telp_wali',
     ];
 }

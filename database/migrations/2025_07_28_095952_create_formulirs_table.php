@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('nik', 16);
             $table->enum('kategori_pendaftaran', ['Reguler', 'Non-Reguler']);
             $table->string('no_kip')->nullable();
-            
+
             // Asal Sekolah (Detail)
             $table->string('asal_sd')->nullable();
             $table->string('tahun_lulus_sd')->nullable();
@@ -36,7 +36,7 @@ return new class extends Migration
 
             // Status Sistem
             $table->enum('status_pendaftaran', ['baru', 'menunggu_verifikasi', 'diverifikasi'])->default('baru');
-            
+
             $table->timestamps();
         });
     }

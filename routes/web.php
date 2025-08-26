@@ -1,9 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FormulirController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\DashboardController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,24 +19,25 @@ Route::get('/', function () {
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/dashboard_admin', function () {
-    return view('admin.dashboard');
-});
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', function () {
+        return view('admin.dashboard');
+    })->name('dashboard');
 
-Route::get('/manajemen_pengguna', function () {
-    return view('admin.management-users');
-});
+    // Rute untuk manajemen pengguna (calon mahasiswa)
+    // Resource route akan otomatis membuat semua route CRUD
+    Route::resource('users', UserController::class);
 
-Route::get('/pendaftaran_santri', function () {
-    return view('admin.pendaftaran-santri');
-});
+    // Route tambahan jika diperlukan untuk custom naming
+    Route::get('/management-users', [UserController::class, 'index'])->name('management-users');
 
-Route::get('/keuangan', function () {
-    return view('admin.keuangan');
-});
-
-Route::get('/edit_pengguna', function () {
-    return view('admin.pengguna.edit-users');
+    // Anda bisa tambahkan rute admin lainnya di sini
+    Route::get('/pendaftaran-santri', function () {
+        return view('admin.pendaftaran-santri');
+    })->name('pendaftaran');
+    Route::get('/keuangan', function () {
+        return view('admin.keuangan');
+    })->name('keuangan');
 });
 
 /*

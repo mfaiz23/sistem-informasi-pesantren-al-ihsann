@@ -181,7 +181,7 @@
     </x-admin-layout>
 
     {{-- Modal Component --}}
-    <x-admin.keuangan-detail-modal />
+    <x-admin.keuangan.keuangan-detail-modal />
 
 
 </div>

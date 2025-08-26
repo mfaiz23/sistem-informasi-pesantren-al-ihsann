@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Formulir;
 use App\Models\KipDocument;
-use Illuminate\Http\RedirectResponse; 
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -77,11 +77,11 @@ class FormulirController extends Controller
         $formulir = $user->formulir()->with(['alamat', 'parent', 'kipDocument'])->first();
 
         // Tambahkan kondisi ini: Jika formulir tidak ditemukan...
-        if (!$formulir) {
+        if (! $formulir) {
             // ...arahkan pengguna ke halaman untuk membuat formulir.
             return redirect()->route('formulir.create')->with('info', 'Mohon lengkapi formulir pendaftaran Anda terlebih dahulu.');
         }
-        
+
         // Panggil Policy untuk keamanan
         $this->authorize('update', $formulir);
 
@@ -100,7 +100,7 @@ class FormulirController extends Controller
         $user = $request->user();
         $formulir = $user->formulir;
 
-        if (!$formulir) {
+        if (! $formulir) {
             return back()->with('error', 'Data formulir tidak ditemukan.');
         }
 
@@ -117,7 +117,7 @@ class FormulirController extends Controller
         DB::transaction(function () use ($formulir, $validatedData) {
             $formulirData = collect($validatedData)->except('dokumen_kip')->toArray();
             $formulir->update($formulirData);
-            
+
             if ($formulir->alamat) {
                 $formulir->alamat->update($validatedData);
             }
@@ -143,7 +143,7 @@ class FormulirController extends Controller
             'nik' => 'required|string|size:16',
             'kategori_pendaftaran' => 'required|in:Reguler,Non-Reguler',
             'no_kip' => 'required_if:kategori_pendaftaran,Non-Reguler|nullable|string|max:255',
-            
+
             'asal_sd' => 'nullable|string|max:255',
             'tahun_lulus_sd' => 'nullable|string|size:4',
             'asal_smp' => 'nullable|string|max:255',

@@ -16,7 +16,7 @@ trait LogsChanges
     {
         static::updating(function (Model $model) {
             // Hanya jalankan jika ada user yang login (untuk menghindari error di seeder/tinker)
-            if (!Auth::check()) {
+            if (! Auth::check()) {
                 return;
             }
 
@@ -37,11 +37,11 @@ trait LogsChanges
                 // Simpan ke tabel formulir_logs
                 FormulirLog::create([
                     'formulir_id' => $formulirId,
-                    'user_id'     => Auth::id(),
-                    'field_name'  => class_basename($model) . '->' . $field, // e.g., "Alamat->provinsi"
-                    'old_value'   => $oldValue,
-                    'new_value'   => $newValue,
-                    'edited_at'   => now(),
+                    'user_id' => Auth::id(),
+                    'field_name' => class_basename($model).'->'.$field, // e.g., "Alamat->provinsi"
+                    'old_value' => $oldValue,
+                    'new_value' => $newValue,
+                    'edited_at' => now(),
                 ]);
             }
         });

@@ -11,11 +11,11 @@ return new class extends Migration
         Schema::create('parents', function (Blueprint $table) {
             $table->id();
             $table->foreignId('formulir_id')->constrained('formulirs')->onDelete('cascade');
-            
+
             // Data Ayah
             $table->string('nama_ayah');
             $table->string('no_telp_ayah');
-            
+
             // Data Ibu
             $table->string('nama_ibu');
             $table->string('no_telp_ibu');
@@ -23,7 +23,7 @@ return new class extends Migration
             // Data Wali (Opsional)
             $table->string('nama_wali')->nullable();
             $table->string('no_telp_wali')->nullable();
-            
+
             $table->timestamps();
         });
     }
