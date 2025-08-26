@@ -1,0 +1,5 @@
+on:
+  push:
+    branches: [ main, DashboardAdmin ]
+  pull_request:
+    branches: [ main, DashboardAdmin ]
