@@ -16,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         ]);
 
+        $middleware->appendToGroup('web', [
+            \App\Http\Middleware\EnsureTncIsAccepted::class,
+        ]);
+
         $middleware->validateCsrfTokens(except: [
             'midtrans/notification',
         ]);

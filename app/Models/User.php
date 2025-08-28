@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Notifications\CustomResetPasswordNotification;
-use App\Notifications\CustomVerifyEmail;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -36,21 +34,18 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Definisikan relasi one-to-one ke model Formulir.
-     * Ini memungkinkan kita memanggil $user->formulir.
+     * Relasi one-to-one ke model Formulir.
      */
     public function formulir(): HasOne
     {
         return $this->hasOne(Formulir::class);
     }
 
-    public function sendPasswordResetNotification($token)
+    /**
+     * Relasi one-to-many ke Invoice.
+     */
+    public function invoices()
     {
-        $this->notify(new CustomResetPasswordNotification($token));
-    }
-
-    public function sendEmailVerificationNotification()
-    {
-        $this->notify(new CustomVerifyEmail);
+        return $this->hasMany(\App\Models\Invoice::class);
     }
 }

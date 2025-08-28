@@ -17,24 +17,26 @@ class FormulirController extends Controller
     /**
      * Menampilkan formulir pendaftaran kosong.
      */
-    public function create(): View
+    public function create(): View|RedirectResponse
     {
         $user = Auth::user();
+        $invoice = $user->invoices()->where('type', 'formulir')->first();
 
-        // Jika user sudah punya data formulir...
+        if (! $invoice || $invoice->status !== 'paid') {
+            return redirect()->route('dashboard')->with('error', 'Anda harus menyelesaikan pembayaran terlebih dahulu sebelum mengisi formulir.');
+        }
+
         $formulir = $user->formulir ? $user->formulir->load(['alamat', 'parent']) : null;
         if ($formulir) {
-            // ...tampilkan halaman 'show' (read-only).
             return view('formulir.show', [
                 'user' => $user,
                 'formulir' => $formulir,
             ]);
         }
 
-        // Jika belum, tampilkan formulir kosong untuk diisi.
         return view('formulir', [
             'user' => $user,
-            'formulir' => null, // Pastikan variabel $formulir tetap dikirim, meskipun nilainya null
+            'formulir' => null,
         ]);
     }
 
@@ -71,23 +73,16 @@ class FormulirController extends Controller
     /**
      * Menampilkan halaman profil yang berisi data formulir untuk diedit.
      */
-    public function edit(Request $request): View|RedirectResponse // Sesuaikan return type
+    public function edit(Request $request): View|RedirectResponse
     {
         $user = $request->user();
-
-        // Ganti firstOrFail() menjadi first()
         $formulir = $user->formulir()->with(['alamat', 'parent', 'kipDocument'])->first();
-
-        // Tambahkan kondisi ini: Jika formulir tidak ditemukan...
         if (! $formulir) {
-            // ...arahkan pengguna ke halaman untuk membuat formulir.
             return redirect()->route('formulir.create')->with('info', 'Mohon lengkapi formulir pendaftaran Anda terlebih dahulu.');
         }
 
-        // Panggil Policy untuk keamanan
         $this->authorize('update', $formulir);
 
-        // Jika formulir ditemukan, tampilkan halaman edit profil
         return view('profile.edit', [
             'user' => $user,
             'formulir' => $formulir,
