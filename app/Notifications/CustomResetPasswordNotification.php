@@ -5,7 +5,6 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Lang;
 
 class CustomResetPasswordNotification extends Notification
 {
@@ -32,8 +31,8 @@ class CustomResetPasswordNotification extends Notification
     public function toMail($notifiable)
     {
         $resetUrl = url(config('app.url').route('password.reset', [
-            'token' => $this->token, 
-            'email' => $notifiable->getEmailForPasswordReset()
+            'token' => $this->token,
+            'email' => $notifiable->getEmailForPasswordReset(),
         ], false));
 
         // Menggunakan template kustom di emails/auth/reset.blade.php

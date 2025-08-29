@@ -4,7 +4,6 @@ namespace App\Notifications;
 
 use App\Models\Invoice;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -38,7 +37,7 @@ class PaymentSuccess extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->subject('Konfirmasi Pembayaran Formulir PSB Al-Ihsan')
-                    ->markdown('emails.payment.success', ['invoice' => $this->invoice]);
+            ->subject('Konfirmasi Pembayaran Formulir PSB Al-Ihsan')
+            ->markdown('emails.payment.success', ['invoice' => $this->invoice]);
     }
 }
