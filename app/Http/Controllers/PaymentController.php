@@ -6,6 +6,8 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use App\Notifications\PaymentSuccess;
 use Midtrans\Config;
 use Midtrans\Notification;
 use Midtrans\Snap;
@@ -41,11 +43,16 @@ class PaymentController extends Controller
         if ($invoice->status == 'paid') {
             return redirect()->route('dashboard')->with('info', 'Anda sudah membayar biaya formulir pendaftaran.');
         }
+        
+        if (!$invoice->wasRecentlyCreated && $invoice->status == 'pending') {
+            $invoice->invoice_number = 'INV-FORM-' . $user->id . '-' . time();
+            $invoice->save();
+        }
 
         // Siapkan parameter untuk Midtrans
         $params = [
             'transaction_details' => [
-                'order_id' => $invoice->invoice_number, // Gunakan invoice_number sebagai order_id
+                'order_id' => $invoice->invoice_number, 
                 'gross_amount' => $invoice->amount,
             ],
             'customer_details' => [
@@ -137,11 +144,18 @@ class PaymentController extends Controller
             [
                 'amount' => $invoice->amount,
                 'payment_method' => $notif->payment_type,
-                'status' => 'success', // Status internal aplikasi
+                'status' => 'success', 
                 'midtrans_order_id' => $notif->order_id,
                 'midtrans_transaction_id' => $notif->transaction_id,
                 'raw_response' => json_encode($notif->getResponse()),
             ]
         );
+        try {
+            $user = $invoice->user;
+            $user->notify(new PaymentSuccess($invoice));
+        } catch (\Exception $e) {
+            // Jika email gagal dikirim, catat error tapi jangan hentikan proses
+            Log::error('Gagal mengirim notifikasi pembayaran untuk invoice ' . $invoice->invoice_number . ': ' . $e->getMessage());
+        }
     }
 }

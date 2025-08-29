@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Notifications\CustomResetPasswordNotification;
+use App\Notifications\CustomVerifyEmail;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -13,6 +16,11 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable, SoftDeletes;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         'name',
         'email',
@@ -20,11 +28,21 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
     ];
 
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [
@@ -44,8 +62,29 @@ class User extends Authenticatable implements MustVerifyEmail
     /**
      * Relasi one-to-many ke Invoice.
      */
-    public function invoices()
+    public function invoices(): HasMany
     {
-        return $this->hasMany(\App\Models\Invoice::class);
+        return $this->hasMany(Invoice::class);
+    }
+
+    /**
+     * Kirim notifikasi verifikasi email kustom.
+     *
+     * @return void
+     */
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new CustomVerifyEmail);
+    }
+
+    /**
+     * Kirim notifikasi reset password kustom.
+     *
+     * @param  string  $token
+     * @return void
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new CustomResetPasswordNotification($token));
     }
 }

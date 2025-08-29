@@ -32,30 +32,30 @@
         </div>
     </div>
 
-    {{-- Script Midtrans Snap --}}
+    {{-- Midtrans Snap --}}
     <script src="https://app.sandbox.midtrans.com/snap/snap.js"
         data-client-key="{{ config('services.midtrans.client_key') }}"></script>
     <script type="text/javascript">
         // Ambil tombol pembayaran
         var payButton = document.getElementById('pay-button');
         payButton.addEventListener('click', function () {
-            // Panggil pop-up Snap dengan snap token dari controller
+            // pop-up Snap
             window.snap.pay('{{ $snapToken }}', {
                 onSuccess: function (result) {
-                    /* Anda bisa menambahkan logika di sini jika pembayaran sukses, misal redirect */
+                    /* Pembayaran sukses */
                     window.location.href = '{{ route('dashboard') }}?payment_status=success';
                 },
                 onPending: function (result) {
-                    /* Anda bisa menambahkan logika di sini jika pembayaran pending */
+                    /* Pembayaran pending */
                     window.location.href = '{{ route('dashboard') }}?payment_status=pending';
                 },
                 onError: function (result) {
-                    /* Anda bisa menambahkan logika di sini jika pembayaran gagal */
+                    /* Pembayaran gagal */
                     window.location.href = '{{ route('dashboard') }}?payment_status=error';
                 },
                 onClose: function () {
-                    /* Pengguna menutup pop-up tanpa menyelesaikan transaksi */
-                    alert('Anda menutup pop-up pembayaran sebelum selesai.');
+                    /* Menutup pop-up */
+                    window.location.href = '{{ route('payment.create') }}';
                 }
             });
         });

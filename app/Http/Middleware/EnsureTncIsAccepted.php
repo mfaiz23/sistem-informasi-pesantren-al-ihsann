@@ -19,9 +19,20 @@ class EnsureTncIsAccepted
         $user = Auth::user();
 
         // Cek jika user sudah login DAN belum menyetujui T&C
-        if ($user && ! $user->accepted_tnc_at) {
+        if ($user && !$user->accepted_tnc_at) {
+            
+            // Daftar rute yang diizinkan untuk diakses sebelum menyetujui T&C
+            $allowedRoutes = [
+                'dashboard',
+                'logout',
+                'tnc.accept',
+                'verification.notice', 
+                'verification.verify', 
+                'verification.send',   
+            ];
 
-            if (! $request->routeIs('dashboard') && ! $request->routeIs('logout') && ! $request->routeIs('tnc.accept')) {
+            // Jika rute yang sedang diakses TIDAK ADA dalam daftar yang diizinkan
+            if (!in_array($request->route()->getName(), $allowedRoutes)) {
                 return redirect()->route('dashboard');
             }
         }
