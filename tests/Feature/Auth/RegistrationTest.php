@@ -54,13 +54,14 @@ class RegistrationTest extends TestCase
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);
+        $response->assertStatus(302);
         $response->assertSessionHasErrors('email');
         $this->assertDatabaseCount('users', 1);
         $this->assertGuest();
     }
 
     #[Test]
-    public function test_confirm_pass_not_valid()
+    public function test_pass_not_confirm()
     {
         $response = $this->withoutVite()->post('/register', [
             'name' => 'Test User',
@@ -69,7 +70,24 @@ class RegistrationTest extends TestCase
             'password' => 'password',
             'password_confirmation' => 'password berbeda',
         ]);
+        $response->assertStatus(302);
         $response->assertSessionHasErrors('password');
+        $this->assertDatabaseCount('users', 0);
+        $this->assertGuest();
+    }
+
+    #[Test]
+    public function test_input_data_not_valid()
+    {
+        $response = $this->withoutVite()->post('/register',[
+            'name' => '1234567',
+            'email' => 'testexample',
+            'no_telp' => '77777777777777777',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+        $response->assertStatus(302);
+        $response->assertSessionHasErrors(['name','email','no_telp']);
         $this->assertDatabaseCount('users', 0);
         $this->assertGuest();
     }

@@ -11,10 +11,16 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Contracts\Auth\CanResetPassword;
+use Illuminate\Auth\Passwords\CanResetPassword as CanResetPasswordTrait;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail, CanResetPassword
 {
+<<<<<<< HEAD
     use HasFactory, Notifiable, SoftDeletes;
+=======
+    use HasFactory, Notifiable, CanResetPasswordTrait;
+>>>>>>> d5451dd (penambahan testing baru)
 
     /**
      * The attributes that are mass assignable.

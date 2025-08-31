@@ -21,10 +21,9 @@ class DashboardTest extends TestCase
     #[Test]
     public function guests_are_redirected_to_login_page()
     {
-        // Act: Coba akses halaman /dashboard sebagai tamu
+        
         $response = $this->withoutVite()->get('/dashboard');
 
-        // Assert: Pastikan diarahkan ke halaman /login
         $response->assertRedirect('/login');
     }
 
@@ -35,25 +34,13 @@ class DashboardTest extends TestCase
     #[Test]
     public function authenticated_users_can_see_their_dashboard()
     {
-        // 1. Arrange (Atur)
-        // Buat satu user palsu
+        
         $user = User::factory()->create();
-
-        // Buat data formulir yang terhubung dengan user tersebut
         $formulir = Formulir::factory()->create(['user_id' => $user->id]);
-
-        // 2. Act (Aksi)
-        // Login sebagai user tersebut dan akses halaman /dashboard
         $response = $this->withoutVite()->actingAs($user)->get('/dashboard');
-
-        // 3. Assert (Asersi)
-        // Pastikan request berhasil (status 200 OK)
         $response->assertStatus(200);
-
-        // Pastikan view yang digunakan adalah 'dashboard'
         $response->assertViewIs('dashboard');
 
-        // Pastikan view memiliki data 'user' dan 'formulir' yang benar
         $response->assertViewHas('user', $user);
         $response->assertViewHas('formulir', $formulir);
     }
