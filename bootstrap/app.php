@@ -16,9 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
 
             $middleware->validateCsrfTokens(except: [
-            'midtrans/notification',
+                'midtrans/notification',
+            ]),
         ]);
-     ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

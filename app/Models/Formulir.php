@@ -5,11 +5,11 @@ namespace App\Models;
 use App\Traits\LogsChanges;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Formulir extends Model
 {
-    use HasFactory;
     use HasFactory, LogsChanges;
 
     protected $fillable = [
@@ -20,6 +20,16 @@ class Formulir extends Model
         'asal_sma', 'tahun_lulus_sma', 'asal_universitas', 'jurusan', 'fakultas',
         'semester', 'angkatan', 'status_pendaftaran',
     ];
+
+    protected $casts = [
+        'tanggal_lahir' => 'date',
+    ];
+
+    // Relasi ke User
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function alamat(): HasOne
     {
