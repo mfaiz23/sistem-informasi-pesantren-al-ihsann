@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Formulir;
 use App\Models\KipDocument;
-use Illuminate\Http\RedirectResponse; 
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class FormulirController extends Controller
@@ -16,23 +17,26 @@ class FormulirController extends Controller
     /**
      * Menampilkan formulir pendaftaran kosong.
      */
-    public function create(): View
+    public function create(): View|RedirectResponse
     {
         $user = Auth::user();
+        $invoice = $user->invoices()->where('type', 'formulir')->first();
 
-        // Jika user sudah punya data formulir...
+        if (! $invoice || $invoice->status !== 'paid') {
+            return redirect()->route('dashboard')->with('error', 'Anda harus menyelesaikan pembayaran terlebih dahulu sebelum mengisi formulir.');
+        }
+
         $formulir = $user->formulir ? $user->formulir->load(['alamat', 'parent']) : null;
         if ($formulir) {
-            // ...tampilkan halaman 'show' (read-only).
             return view('formulir.show', [
                 'user' => $user,
                 'formulir' => $formulir,
             ]);
         }
 
-        // Jika belum, tampilkan formulir kosong untuk diisi.
         return view('formulir', [
             'user' => $user,
+            'formulir' => null,
         ]);
     }
 
@@ -69,23 +73,16 @@ class FormulirController extends Controller
     /**
      * Menampilkan halaman profil yang berisi data formulir untuk diedit.
      */
-    public function edit(Request $request): View|RedirectResponse // Sesuaikan return type
+    public function edit(Request $request): View|RedirectResponse
     {
         $user = $request->user();
-
-        // Ganti firstOrFail() menjadi first()
         $formulir = $user->formulir()->with(['alamat', 'parent', 'kipDocument'])->first();
-
-        // Tambahkan kondisi ini: Jika formulir tidak ditemukan...
-        if (!$formulir) {
-            // ...arahkan pengguna ke halaman untuk membuat formulir.
+        if (! $formulir) {
             return redirect()->route('formulir.create')->with('info', 'Mohon lengkapi formulir pendaftaran Anda terlebih dahulu.');
         }
-        
-        // Panggil Policy untuk keamanan
+
         $this->authorize('update', $formulir);
 
-        // Jika formulir ditemukan, tampilkan halaman edit profil
         return view('profile.edit', [
             'user' => $user,
             'formulir' => $formulir,
@@ -100,13 +97,17 @@ class FormulirController extends Controller
         $user = $request->user();
         $formulir = $user->formulir;
 
-        if (!$formulir) {
+        if (! $formulir) {
             return back()->with('error', 'Data formulir tidak ditemukan.');
         }
 
         $validatedData = $this->validateForm($request, true);
 
         if ($request->hasFile('dokumen_kip')) {
+            if ($formulir->kipDocument && $formulir->kipDocument->dokumen_path) {
+                Storage::disk('public')->delete($formulir->kipDocument->dokumen_path);
+            }
+
             $kipDocumentPath = $request->file('dokumen_kip')->store('dokumen-kip', 'public');
             $formulir->kipDocument()->updateOrCreate(
                 ['formulir_id' => $formulir->id],
@@ -117,7 +118,7 @@ class FormulirController extends Controller
         DB::transaction(function () use ($formulir, $validatedData) {
             $formulirData = collect($validatedData)->except('dokumen_kip')->toArray();
             $formulir->update($formulirData);
-            
+
             if ($formulir->alamat) {
                 $formulir->alamat->update($validatedData);
             }
@@ -140,10 +141,10 @@ class FormulirController extends Controller
             'tempat_lahir' => 'required|string|max:255',
             'tanggal_lahir' => 'required|date_format:Y-m-d|before_or_equal:today',
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
-            'nik' => 'required|string|size:16',
+            'nik' => 'required|numeric|digits:16',
             'kategori_pendaftaran' => 'required|in:Reguler,Non-Reguler',
             'no_kip' => 'required_if:kategori_pendaftaran,Non-Reguler|nullable|string|max:255',
-            
+
             'asal_sd' => 'nullable|string|max:255',
             'tahun_lulus_sd' => 'nullable|string|size:4',
             'asal_smp' => 'nullable|string|max:255',
@@ -163,12 +164,10 @@ class FormulirController extends Controller
             'desa_kelurahan' => 'required|string|max:255',
             'alamat_lengkap' => 'required|string',
 
-            'nama_ayah' => 'required|string|max:255',
-            'no_telp_ayah' => 'required|string|max:15',
-            'nama_ibu' => 'required|string|max:255',
-            'no_telp_ibu' => 'required|string|max:15',
-            'nama_wali' => 'nullable|string|max:255',
-            'no_telp_wali' => 'nullable|string|max:15',
+            'nama_lengkap' => 'required|string|max:255',
+            'no_telp' => 'required|string|max:15',
+            'alamat' => 'required|string',
+            'hubungan_keluarga' => 'required|string|max:255',
         ];
 
         $rules['dokumen_kip'] = $isUpdate

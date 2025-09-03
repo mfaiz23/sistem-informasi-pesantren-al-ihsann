@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Pesantren Al-Ihsan</title>
+    <title>PSB Al-Ihsan</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>

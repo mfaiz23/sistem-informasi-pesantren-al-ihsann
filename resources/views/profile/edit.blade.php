@@ -1,9 +1,17 @@
 {{-- File: resources/views/profile/edit.blade.php --}}
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Profil Calon Santri
-        </h2>
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                Profil Calon Santri
+            </h2>
+
+            {{-- Ganti class pada tombol ini --}}
+            <a href="{{ route('dashboard') }}"
+                class="inline-block bg-blue-500 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-blue-600 transition duration-300 text-sm">
+                Dashboard
+            </a>
+        </div>
     </x-slot>
 
     <div class="py-12">

@@ -1,0 +1,44 @@
+name: Check Code Style
+
+on:
+  push:
+    branches: ["main", "DashboardAdmin"]
+  pull_request:
+    branches: ["main", "DashboardAdmin"]
+
+jobs:
+  # Pekerjaan pertama untuk memeriksa PHP
+  pint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4.9"
+
+      - name: Install Dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Run Laravel Pint
+        run: ./vendor/bin/pint --test
+
+  # Pekerjaan kedua untuk memeriksa styling (frontend)
+  prettier:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.17.0"
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Prettier
+        run: npx prettier --check .

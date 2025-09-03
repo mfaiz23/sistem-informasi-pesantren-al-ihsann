@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users'); // FK ke tabel users
             $table->enum('action_type', [
                 'create', 'update', 'delete', 'login', 'logout',
-                'verify_kip_dok', 'verify_pendaftaran'
+                'verify_kip_dok', 'verify_pendaftaran',
             ]);
             $table->unsignedBigInteger('target_id');
             $table->string('target_type');

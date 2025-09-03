@@ -1,16 +1,11 @@
 <header class="flex items-center justify-between px-6 py-4 bg-white border-b-2 border-gray-200">
     <div class="flex items-center">
-        {{--
-          TOMBOL SELALU TERLIHAT: class 'lg:hidden' dihapus.
-          FUNGSI TOGGLE: @click diubah menjadi "sidebarOpen = !sidebarOpen".
-        --}}
         <button @click="sidebarOpen = !sidebarOpen" class="text-gray-500 focus:outline-none">
             <svg class="w-6 h-6 me-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M4 6H20M4 12H20M4 18H11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </button>
 
-        <!-- Search Input -->
         <div class="relative mx-4 lg:mx-0">
             <span class="absolute inset-y-0 left-0 flex items-center pl-3">
                 <svg class="w-5 h-5 text-gray-500" viewBox="0 0 24 24" fill="none">
@@ -22,15 +17,25 @@
     </div>
 
     <div class="flex items-center">
-        <!-- Profile Dropdown (Dummy Data) -->
         <div x-data="{ dropdownOpen: false }" class="relative">
             <button @click="dropdownOpen = ! dropdownOpen" class="relative block w-8 h-8 overflow-hidden rounded-full shadow focus:outline-none">
-                <img class="object-cover w-full h-full" src="https://ui-avatars.com/api/?name=Nama+User&background=22C55E&color=fff" alt="Your avatar">
+                {{-- Menggunakan nama user yang sedang login untuk avatar --}}
+                <img class="object-cover w-full h-full" src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=22C55E&color=fff" alt="Your avatar">
             </button>
 
             <div x-show="dropdownOpen" @click.away="dropdownOpen = false" class="absolute right-0 w-48 mt-2 overflow-hidden bg-white rounded-md shadow-xl z-10" x-transition>
-                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-500 hover:text-white">Profile</a>
-                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-500 hover:text-white">Log Out</a>
+                {{-- Tautan ke halaman profil (sesuaikan jika route berbeda) --}}
+                <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-500 hover:text-white">Profile</a>
+
+                {{-- Form untuk Logout --}}
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <a href="{{ route('logout') }}"
+                       onclick="event.preventDefault(); this.closest('form').submit();"
+                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-500 hover:text-white">
+                        Log Out
+                    </a>
+                </form>
             </div>
         </div>
     </div>
