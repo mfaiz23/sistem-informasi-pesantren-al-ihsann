@@ -1,6 +1,7 @@
 <?php
 
 
+use App\Http\Controllers\Admin\FormulirController as AdminFormulirController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FormulirController;
@@ -29,9 +30,18 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('users', UserController::class);
     Route::get('/management-users', [UserController::class, 'index'])->name('management-users');
 
-    Route::get('/pendaftaran-santri', function () {
-        return view('admin.pendaftaran-santri');
-    })->name('pendaftaran');
+    // PERBAIKAN: Ganti rute ini agar memanggil FormulirController
+    Route::get('/pendaftaran-santri', [AdminFormulirController::class, 'index'])->name('pendaftaran');
+    // PERBAIKAN: Hapus prefix 'admin.' dari name() karena sudah ada di grup
+    Route::post('/formulir/verifikasi/{id}', [AdminFormulirController::class, 'verifikasi'])
+        ->name('formulir.verifikasi'); // ← Hanya 'formulir.verifikasi'
+
+    Route::get('/formulir/download-kip/{id}', [AdminFormulirController::class, 'downloadKipDocument'])->name('formulir.download_kip');
+
+    // PERBAIKAN: Hapus '/admin' yang berulang dari path
+    Route::delete('/formulir/{id}', [AdminFormulirController::class, 'destroy'])
+        ->name('formulir.destroy'); // ← Hanya 'formulir.destroy'
+
     Route::get('/keuangan', function () {
         return view('admin.keuangan');
     })->name('keuangan');
