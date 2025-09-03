@@ -23,7 +23,7 @@ class TncController extends Controller
             $user->save();
         }
 
-        // Arahkan kembali ke dashboard
-        return redirect()->route('dashboard');
+        // Arahkan kembali ke halaman pembayaran
+        return redirect()->route('payment.create');
     }
 }

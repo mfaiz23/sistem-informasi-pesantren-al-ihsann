@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Invoice;
 use App\Models\Payment;
+use App\Notifications\PaymentSuccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Midtrans\Config;
 use Midtrans\Notification;
 use Midtrans\Snap;
@@ -23,36 +26,34 @@ class PaymentController extends Controller
     {
         $user = Auth::user();
 
-        // Cari pembayaran yang sudah ada (baik 'berhasil' maupun 'pending')
-        $payment = Payment::where('user_id', $user->id)
-            ->where('jenis_pembayaran', 'formulir')
-            ->first();
+        // Cari atau buat Invoice terlebih dahulu
+        $invoice = Invoice::firstOrCreate(
+            [
+                'user_id' => $user->id,
+                'type' => 'formulir',
+            ],
+            [
+                'invoice_number' => 'INV-FORM-'.$user->id.'-'.time(),
+                'amount' => 300000,
+                'status' => 'pending',
+            ]
+        );
 
-        // Jika sudah ada pembayaran yang berhasil, redirect
-        if ($payment && $payment->status == 'berhasil') {
+        // Cek apakah invoice ini sudah lunas
+        if ($invoice->status == 'paid') {
             return redirect()->route('dashboard')->with('info', 'Anda sudah membayar biaya formulir pendaftaran.');
         }
 
-        // Jika BELUM ada pembayaran sama sekali, buat record baru
-        if (! $payment) {
-            $orderId = 'FORM-'.$user->id.'-'.time();
-            $payment = Payment::create([
-                'user_id' => $user->id,
-                'jenis_pembayaran' => 'formulir',
-                'jumlah' => 300000,
-                'status' => 'pending',
-                'midtrans_order_id' => $orderId,
-            ]);
+        if (! $invoice->wasRecentlyCreated && $invoice->status == 'pending') {
+            $invoice->invoice_number = 'INV-FORM-'.$user->id.'-'.time();
+            $invoice->save();
         }
 
-        // Jika sudah ada pembayaran tapi statusnya BUKAN 'berhasil' (pending/gagal),
-        // kita akan menggunakan record yang sama dan hanya meminta token baru.
-        $orderId = $payment->midtrans_order_id;
-
+        // Siapkan parameter untuk Midtrans
         $params = [
             'transaction_details' => [
-                'order_id' => $orderId,
-                'gross_amount' => $payment->jumlah,
+                'order_id' => $invoice->invoice_number,
+                'gross_amount' => $invoice->amount,
             ],
             'customer_details' => [
                 'first_name' => $user->name,
@@ -62,7 +63,7 @@ class PaymentController extends Controller
             'item_details' => [
                 [
                     'id' => 'FORMULIR_PSB',
-                    'price' => $payment->jumlah,
+                    'price' => $invoice->amount,
                     'quantity' => 1,
                     'name' => 'Biaya Formulir Pendaftaran Santri Baru',
                 ],
@@ -74,7 +75,8 @@ class PaymentController extends Controller
 
             return view('payment.create', [
                 'snapToken' => $snapToken,
-                'payment' => $payment,
+                'payment' => null,
+                'invoice' => $invoice,
             ]);
 
         } catch (\Exception $e) {
@@ -82,9 +84,11 @@ class PaymentController extends Controller
         }
     }
 
+    /**
+     * Handle notifikasi dari Midtrans.
+     */
     public function notificationHandler(Request $request)
     {
-        $serverKey = config('services.midtrans.server_key');
         $notif = new Notification;
 
         $transaction = $notif->transaction_status;
@@ -92,32 +96,66 @@ class PaymentController extends Controller
         $orderId = $notif->order_id;
         $fraud = $notif->fraud_status;
 
-        $payment = Payment::where('midtrans_order_id', $orderId)->first();
+        // Cari invoice berdasarkan invoice_number yang dikirim sebagai order_id
+        $invoice = Invoice::where('invoice_number', $orderId)->first();
 
-        if (! $payment) {
-            return response()->json(['message' => 'Payment not found.'], 404);
+        if (! $invoice) {
+            return response()->json(['message' => 'Invoice not found.'], 404);
+        }
+
+        // Jangan proses notifikasi untuk invoice yang sudah lunas
+        if ($invoice->status === 'paid') {
+            return response()->json(['message' => 'Invoice already paid.']);
         }
 
         if ($transaction == 'capture') {
             if ($type == 'credit_card') {
                 if ($fraud == 'challenge') {
-                    $payment->update(['status' => 'pending']);
+                    $invoice->update(['status' => 'pending']);
                 } else {
-                    $payment->update(['status' => 'berhasil', 'paid_at' => now()]);
+                    $this->setInvoiceSuccess($invoice, $notif);
                 }
             }
         } elseif ($transaction == 'settlement') {
-            $payment->update(['status' => 'berhasil', 'paid_at' => now()]);
+            $this->setInvoiceSuccess($invoice, $notif);
         } elseif ($transaction == 'pending') {
-            $payment->update(['status' => 'pending']);
-        } elseif ($transaction == 'deny') {
-            $payment->update(['status' => 'gagal']);
-        } elseif ($transaction == 'expire') {
-            $payment->update(['status' => 'gagal']);
-        } elseif ($transaction == 'cancel') {
-            $payment->update(['status' => 'gagal']);
+            $invoice->update(['status' => 'pending']);
+        } elseif ($transaction == 'deny' || $transaction == 'expire' || $transaction == 'cancel') {
+            $invoice->update(['status' => 'failed']);
         }
 
-        return response()->json(['message' => 'Notification handled.']);
+        return response()->json(['message' => 'Notification handled successfully.']);
+    }
+
+    /**
+     * Helper function untuk menandai invoice sebagai lunas dan membuat record payment.
+     */
+    private function setInvoiceSuccess(Invoice $invoice, Notification $notif)
+    {
+        // Update status invoice menjadi 'paid'
+        $invoice->update([
+            'status' => 'paid',
+            'completed_at' => now(),
+        ]);
+
+        // Buat atau perbarui record di tabel payments
+        Payment::updateOrCreate(
+            ['invoice_id' => $invoice->id],
+            [
+                'amount' => $invoice->amount,
+                'payment_method' => $notif->payment_type,
+                'status' => 'success',
+                'midtrans_order_id' => $notif->order_id,
+                'midtrans_transaction_id' => $notif->transaction_id,
+                'raw_response' => json_encode($notif->getResponse()),
+            ]
+        );
+        try {
+            $user = $invoice->user;
+            $user->notify(new PaymentSuccess($invoice));
+        } catch (\Exception $e) {
+            // Jika email gagal dikirim, catat error tapi jangan hentikan proses
+            Log::error('Gagal mengirim notifikasi pembayaran untuk invoice '.$invoice->invoice_number.': '.$e->getMessage());
+        }
     }
 }

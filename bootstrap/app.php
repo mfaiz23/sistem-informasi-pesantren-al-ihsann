@@ -14,10 +14,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+        ]);
 
-            $middleware->validateCsrfTokens(except: [
-                'midtrans/notification',
-            ]),
+        $middleware->appendToGroup('web', [
+            \App\Http\Middleware\EnsureTncIsAccepted::class,
+        ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'midtrans/notification',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
