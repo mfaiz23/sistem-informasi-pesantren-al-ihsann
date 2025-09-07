@@ -13,12 +13,13 @@
     {{-- Modal dilebarkan menjadi max-w-2xl --}}
     <div
         @click.away="modalOpen = false"
-        class="w-full max-w-2xl px-6 py-4 mx-auto bg-white rounded-lg shadow-xl"
+        class="w-full max-w-2xl px-6 py-4 mx-auto overflow-hidden bg-white rounded-lg shadow-xl"
     >
         <div class="flex items-start justify-between pb-3 border-b">
             <div>
                 <h3 class="text-xl font-semibold text-gray-800" id="modal-title">Detail Pembayaran</h3>
-                <p class="text-sm text-gray-500" x-show="selectedPayment">Invoice: <span x-text="selectedPayment.invoice_id"></span></p>
+                {{-- DIPERBAIKI: Menggunakan invoice_number --}}
+                <p class="text-sm text-gray-500" x-show="selectedPayment">Invoice: <span x-text="selectedPayment.invoice_number"></span></p>
             </div>
             <button @click="modalOpen = false" class="text-gray-400 hover:text-gray-600 focus:outline-none">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -32,10 +33,12 @@
                 <div>
                     <h4 class="text-sm font-medium text-gray-500">Dibayarkan oleh:</h4>
                     <div class="flex items-center mt-2 space-x-3">
-                        <img class="object-cover w-12 h-12 rounded-full" :src="`https://ui-avatars.com/api/?name=${selectedPayment.name.replace(' ', '+')}&background=22C55E&color=fff`" alt="Foto profil">
+                        {{-- DIPERBAIKI: Mengambil nama dari relasi user --}}
+                        <img class="object-cover w-12 h-12 rounded-full" :src="`https://ui-avatars.com/api/?name=${selectedPayment.user.name.replace(' ', '+')}&background=22C55E&color=fff`" alt="Foto profil">
                         <div>
-                            <p class="font-semibold text-gray-800" x-text="selectedPayment.name"></p>
-                            <p class="text-sm text-gray-600" x-text="selectedPayment.email"></p>
+                            {{-- DIPERBAIKI: Mengambil nama & email dari relasi user --}}
+                            <p class="font-semibold text-gray-800" x-text="selectedPayment.user.name"></p>
+                            <p class="text-sm text-gray-600" x-text="selectedPayment.user.email"></p>
                         </div>
                     </div>
                 </div>
@@ -45,19 +48,22 @@
                     <dl class="mt-2 space-y-2 text-sm">
                         <div class="flex justify-between">
                             <dt class="text-gray-600">Tanggal Bayar:</dt>
-                            <dd class="font-medium text-gray-800" x-text="selectedPayment.date"></dd>
+                            {{-- DIPERBAIKI: Menggunakan 'completed_at' dan memformatnya, dengan fallback --}}
+                            <dd class="font-medium text-gray-800" x-text="selectedPayment.completed_at ? new Date(selectedPayment.completed_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'"></dd>
                         </div>
                         <div class="flex justify-between">
                             <dt class="text-gray-600">Metode Bayar:</dt>
-                            <dd class="font-medium text-gray-800" x-text="selectedPayment.payment_method"></dd>
+                            {{-- DIPERBAIKI: Mengambil dari relasi payment, dengan fallback --}}
+                            <dd class="font-medium text-gray-800 capitalize" x-text="selectedPayment.payment?.payment_method.replace('_', ' ') ?? '-'"></dd>
                         </div>
                         <div class="flex justify-between">
                             <dt class="text-gray-600">Status:</dt>
-                            <dd class="font-semibold"
+                            {{-- DIPERBAIKI: Menyesuaikan kondisi status dengan data Midtrans --}}
+                            <dd class="font-semibold capitalize"
                                 :class="{
-                                    'text-green-600': selectedPayment.status === 'Sudah Lunas',
-                                    'text-red-600': selectedPayment.status === 'Menunggu Pembayaran',
-                                    'text-yellow-600': selectedPayment.status === 'Menunggu Verifikasi'
+                                    'text-green-600': selectedPayment.status === 'paid',
+                                    'text-yellow-600': selectedPayment.status === 'pending',
+                                    'text-red-600': selectedPayment.status !== 'paid' && selectedPayment.status !== 'pending'
                                 }"
                                 x-text="selectedPayment.status"></dd>
                         </div>
@@ -69,7 +75,8 @@
             <div class="pt-4 mt-4 border-t">
                 <div class="flex justify-between items-center">
                     <span class="text-lg font-semibold text-gray-800">Total Pembayaran</span>
-                    <span class="text-xl font-bold text-green-600" x-text="new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(selectedPayment.nominal)"></span>
+                    {{-- DIPERBAIKI: Menggunakan 'amount' untuk nominal --}}
+                    <span class="text-xl font-bold text-green-600" x-text="new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(selectedPayment.amount)"></span>
                 </div>
             </div>
         </div>
