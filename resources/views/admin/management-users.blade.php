@@ -133,8 +133,8 @@
                         <td class="px-4 py-3 text-sm font-semibold">{{ $user->id }}</td>
                         <td class="px-4 py-3 text-sm font-medium">{{ $user->name }}</td>
                         <td class="px-4 py-3 text-sm">{{ $user->email }}</td>
-                        <td class="px-4 py-3 text-sm">
-                             <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $user->role == 'admin' ? 'text-purple-700 bg-purple-100' : 'text-blue-700 bg-blue-100' }}">
+                        <td class="px-4 py-3 text-sm whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $user->role == 'admin' ? 'text-purple-700 bg-purple-100' : 'text-blue-700 bg-blue-100' }}">
                                 {{ $user->role == 'calon_mahasiswa' ? 'Calon Santri' : 'Admin' }}
                             </span>
                         </td>
@@ -174,7 +174,7 @@
 
         <x-admin.footer />
 
-    
+
         <x-admin.users.users-detail-modal />
         <x-admin.users.users-delete-modal />
     </div>

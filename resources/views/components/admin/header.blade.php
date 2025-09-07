@@ -24,9 +24,6 @@
             </button>
 
             <div x-show="dropdownOpen" @click.away="dropdownOpen = false" class="absolute right-0 w-48 mt-2 overflow-hidden bg-white rounded-md shadow-xl z-10" x-transition>
-                {{-- Tautan ke halaman profil (sesuaikan jika route berbeda) --}}
-                <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-500 hover:text-white">Profile</a>
-
                 {{-- Form untuk Logout --}}
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf

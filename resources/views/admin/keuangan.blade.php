@@ -1,5 +1,7 @@
 {{-- Responsive Financial Dashboard --}}
-<div x-data="{ modalOpen: false, selectedPayment: null, isMobile: window.innerWidth < 768 }"
+<div x-data="{ modalOpen: false, selectedPayment: null,
+               isMobile: window.innerWidth < 768,
+               showFilters: false }"
      @resize.window="isMobile = window.innerWidth < 768">
     <x-admin-layout>
         {{-- Header Halaman - Mobile Optimized --}}
@@ -15,10 +17,21 @@
 
         {{-- Main Content Panel - Responsive Table --}}
         <div class="p-3 bg-white rounded-lg shadow-md sm:p-6">
-            <h3 class="mb-4 text-lg font-semibold text-gray-700 sm:mb-6">Data Pembayaran</h3>
+            {{-- START: MODIFIED SECTION --}}
+            <div class="flex flex-col items-start justify-between mb-4 space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:mb-6">
+                <h3 class="text-lg font-semibold text-gray-700">Data Pembayaran</h3>
+                {{-- This button will only appear on mobile screens (sm:hidden) to toggle the filters --}}
+                <button @click="showFilters = !showFilters" class="flex items-center px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-md sm:hidden hover:bg-gray-50">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293.707L3.293 7.707A1 1 0 013 7V4z"></path></svg>
+                    Filter & Pencarian
+                </button>
+            </div>
+            {{-- END: MODIFIED SECTION --}}
+
 
             {{-- Responsive Filters --}}
-            <form action="{{ route('admin.keuangan') }}" method="GET" class="flex flex-col gap-3 mb-6 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+            {{-- The :class binding will conditionally hide/show this form on mobile based on the showFilters state --}}
+            <form action="{{ route('admin.keuangan') }}" method="GET" class="flex flex-col gap-3 mb-6 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4 transition-all duration-300" :class="{'hidden': !showFilters && isMobile, 'block': showFilters || !isMobile}">
                 {{-- Search Input --}}
                 <div class="relative flex-grow w-full sm:max-w-xs">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3">

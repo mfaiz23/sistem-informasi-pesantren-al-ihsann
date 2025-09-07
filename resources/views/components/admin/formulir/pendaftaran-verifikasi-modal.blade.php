@@ -1,5 +1,5 @@
  {{-- Modal untuk konfirmasi verifikasi --}}
-        <div x-show="verifModalOpen"
+        <div x-show="deleteModalOpen"
             class="fixed inset-0 z-50 flex items-center justify-center bg-gray-600 bg-opacity-50"
             x-cloak>
             <div class="bg-white rounded-lg p-6 shadow-xl max-w-sm w-full">
