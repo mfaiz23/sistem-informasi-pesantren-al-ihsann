@@ -14,6 +14,19 @@ class Invoice extends Model
     protected $guarded = [];
 
     /**
+     * Memberitahu Eloquent untuk mengubah kolom ini menjadi objek Carbon (Tanggal).
+     * INI ADALAH PERBAIKANNYA.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'due_date' => 'datetime',
+        'completed_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    /**
      * Setiap invoice dimiliki oleh satu User.
      */
     public function user(): BelongsTo
@@ -22,15 +35,11 @@ class Invoice extends Model
     }
 
     /**
-     * Setiap invoice memiliki satu record Payment.
+     * Setiap invoice bisa memiliki satu record Payment.
+     * (Relasi ini opsional tergantung kebutuhan detail pembayaran).
      */
     public function payment(): HasOne
     {
         return $this->hasOne(Payment::class);
-    }
-
-    public function invoices(): HasMany
-    {
-        return $this->hasMany(Invoice::class);
     }
 }

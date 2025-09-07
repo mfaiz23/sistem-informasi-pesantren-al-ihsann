@@ -1,8 +1,10 @@
 <?php
 
 
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\FormulirController as AdminFormulirController;
-use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\KeuanganController as AdminKeuanganController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FormulirController;
 use App\Http\Controllers\PaymentController;
@@ -23,12 +25,10 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-    Route::resource('users', UserController::class);
-    Route::get('/management-users', [UserController::class, 'index'])->name('management-users');
+    Route::resource('users', AdminUserController::class);
+    Route::get('/management-users', [AdminUserController::class, 'index'])->name('management-users');
 
     // PERBAIKAN: Ganti rute ini agar memanggil FormulirController
     Route::get('/pendaftaran-santri', [AdminFormulirController::class, 'index'])->name('pendaftaran');
@@ -42,9 +42,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/formulir/{id}', [AdminFormulirController::class, 'destroy'])
         ->name('formulir.destroy'); // ← Hanya 'formulir.destroy'
 
-    Route::get('/keuangan', function () {
-        return view('admin.keuangan');
-    })->name('keuangan');
+    Route::get('/keuangan', [AdminKeuanganController::class, 'index'])->name('keuangan');
+    Route::get('/keuangan/cetak', [AdminKeuanganController::class, 'cetakPdf'])->name('keuangan.cetak');
 });
 
 Route::get('/manajemen_pengguna', function () {

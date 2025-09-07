@@ -18,8 +18,8 @@ class EnsureTncIsAccepted
     {
         $user = Auth::user();
 
-        // Cek jika user sudah login DAN belum menyetujui T&C
-        if ($user && ! $user->accepted_tnc_at) {
+        // DIPERBAIKI: Cek jika user adalah 'calon_santri' DAN belum menyetujui T&C
+        if ($user && $user->role === 'calon_santri' && ! $user->accepted_tnc_at) {
 
             // Daftar rute yang diizinkan untuk diakses sebelum menyetujui T&C
             $allowedRoutes = [
@@ -33,10 +33,12 @@ class EnsureTncIsAccepted
 
             // Jika rute yang sedang diakses TIDAK ADA dalam daftar yang diizinkan
             if (! in_array($request->route()->getName(), $allowedRoutes)) {
+                // Arahkan ke dasbor (yang akan menampilkan halaman T&C)
                 return redirect()->route('dashboard');
             }
         }
 
+        // Jika user adalah admin atau calon_santri yang sudah setuju, lanjutkan request
         return $next($request);
     }
 }
