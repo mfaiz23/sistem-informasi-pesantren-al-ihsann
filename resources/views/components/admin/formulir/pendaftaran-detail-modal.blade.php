@@ -40,8 +40,10 @@
                         <div class="flex flex-col items-center md:items-start">
                             <span class="text-xs font-semibold text-gray-500">Status</span>
                             <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full"
-                                  :class="selectedSantri.status_pendaftaran === 'diverifikasi' ? 'text-green-700 bg-green-100' : (selectedSantri.status_pendaftaran === 'baru' ? 'text-yellow-700 bg-yellow-100' : 'text-gray-700 bg-gray-100')"
-                                  x-text="selectedSantri.status_pendaftaran ? selectedSantri.status_pendaftaran.charAt(0).toUpperCase() + selectedSantri.status_pendaftaran.slice(1) : 'N/A'">
+                                :class="selectedSantri.status_pendaftaran === 'diverifikasi' ? 'text-green-700 bg-green-100' :
+                                        (selectedSantri.status_pendaftaran === 'ditolak' ? 'text-red-700 bg-red-100' :
+                                        (selectedSantri.status_pendaftaran === 'menunggu_verifikasi' ? 'text-yellow-700 bg-yellow-100' : 'text-gray-700 bg-gray-100'))"
+                                x-text="selectedSantri.status_pendaftaran ? selectedSantri.status_pendaftaran.replace('_', ' ').charAt(0).toUpperCase() + selectedSantri.status_pendaftaran.replace('_', ' ').slice(1) : 'N/A'">
                             </span>
                         </div>
                     </div>

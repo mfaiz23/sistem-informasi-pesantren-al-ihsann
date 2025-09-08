@@ -126,9 +126,19 @@ class FormulirController extends Controller
             if ($formulir->parent) {
                 $formulir->parent->update($validatedData);
             }
+
+            if ($formulir->status_pendaftaran == 'ditolak') {
+                $formulir->status_pendaftaran = 'menunggu_verifikasi';
+                $formulir->alasan_penolakan = null;
+                $formulir->save();
+            }
         });
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        $successMessage = $formulir->wasChanged('status_pendaftaran')
+            ? 'Formulir berhasil diperbarui dan telah diajukan kembali untuk verifikasi.'
+            : 'Data formulir berhasil diperbarui.';
+
+        return Redirect::route('profile.edit')->with('status', 'profile-updated')->with('success', $successMessage);
     }
 
     /**

@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\FormulirRejected;
 use App\Mail\FormulirVerified;
 use App\Models\Formulir;
 use App\Models\KipDocument;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
@@ -124,7 +126,7 @@ class FormulirController extends Controller
         $formulir = Formulir::findOrFail($id);
 
         // Validasi: hanya bisa verifikasi jika status masih 'baru'
-        if ($formulir->status_pendaftaran != 'baru') {
+        if ($formulir->status_pendaftaran != 'menunggu_verifikasi') {
             return redirect()->back()->with('error', 'Formulir sudah diverifikasi sebelumnya.');
         }
 
@@ -144,6 +146,44 @@ class FormulirController extends Controller
         }
 
         return redirect()->back()->with('success', 'Formulir berhasil diverifikasi.');
+    }
+
+    /**
+     * Menolak formulir pendaftaran.
+     */
+    public function tolak(Request $request, $id)
+    {
+        // Validasi input dari modal
+        $request->validate([
+            'alasan_penolakan' => 'required|string|min:10|max:1000',
+        ]);
+
+        $formulir = Formulir::with('user')->findOrFail($id);
+
+        // 1. Pemeriksaan Status yang Konsisten
+        if ($formulir->status_pendaftaran !== 'menunggu_verifikasi') {
+            return redirect()->back()->with('error', 'Formulir ini tidak dalam status "menunggu verifikasi" dan tidak dapat diproses.');
+        }
+
+        // 2. Ubah Status dan Simpan Alasan
+        $formulir->status_pendaftaran = 'ditolak';
+        $formulir->alasan_penolakan = $request->input('alasan_penolakan');
+        $formulir->save();
+
+        // 3. Kirim Email Notifikasi dengan Penanganan Error yang Lebih Baik
+        try {
+            if ($formulir->user && $formulir->user->email) {
+                Mail::to($formulir->user->email)->send(new FormulirRejected($formulir));
+            }
+        } catch (\Exception $e) {
+            // Catat error ke log untuk developer
+            Log::error('Gagal mengirim email penolakan untuk formulir ID '.$formulir->id.': '.$e->getMessage());
+
+            // Berikan pesan error yang jelas kepada admin
+            return redirect()->back()->with('error', 'Formulir ditolak, tetapi notifikasi email gagal dikirim. Silakan cek konfigurasi email Anda. Error: '.$e->getMessage());
+        }
+
+        return redirect()->back()->with('success', 'Formulir berhasil ditolak dan notifikasi telah dikirim ke pendaftar.');
     }
 
     /**

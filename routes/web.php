@@ -23,6 +23,11 @@ Route::get('/', function () {
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('dashboard');
 
+/*
+|--------------------------------------------------------------------------
+| Admin Routes
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
@@ -41,24 +46,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/formulir/{id}', [AdminFormulirController::class, 'destroy'])
         ->name('formulir.destroy'); // ← Hanya 'formulir.destroy'
 
+    Route::post('/formulir/tolak/{id}', [AdminFormulirController::class, 'tolak'])
+        ->name('formulir.tolak');
+
     Route::get('/keuangan', [AdminKeuanganController::class, 'index'])->name('keuangan');
     Route::get('/keuangan/cetak', [AdminKeuanganController::class, 'cetakPdf'])->name('keuangan.cetak');
-});
 
-Route::get('/manajemen_pengguna', function () {
-    return view('admin.management-users');
-});
-
-Route::get('/pendaftaran_santri', function () {
-    return view('admin.pendaftaran-santri');
-});
-
-Route::get('/keuangan', function () {
-    return view('admin.keuangan');
-});
-
-Route::get('/edit_pengguna', function () {
-    return view('admin.pengguna.edit-users');
 });
 
 /*

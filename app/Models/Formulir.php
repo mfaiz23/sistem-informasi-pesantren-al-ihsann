@@ -21,6 +21,17 @@ class Formulir extends Model
         'semester', 'angkatan', 'status_pendaftaran',
     ];
 
+    /**
+     * Menetapkan nilai default untuk atribut model.
+     * Setiap record Formulir baru akan otomatis memiliki status ini.
+     * INI ADALAH PENAMBAHANNYA.
+     *
+     * @var array
+     */
+    protected $attributes = [
+        'status_pendaftaran' => 'menunggu_verifikasi',
+    ];
+
     protected $casts = [
         'tanggal_lahir' => 'date',
     ];
