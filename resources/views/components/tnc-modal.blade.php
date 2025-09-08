@@ -45,7 +45,7 @@
                 @csrf
                 <div class="flex items-center">
                     <input id="agree_tnc" type="checkbox" x-model="agreed"
-                        class="h-4 w-4 border-gray-400 rounded text-green-600 focus:ring-green-500">
+                        class="h-4 w-4 border-gray-400 rounded text-[#028579] focus:ring-[#028579]">
                     <label for="agree_tnc"
                         class="ml-3 text-xs text-gray-800 tracking-wide cursor-pointer uppercase">SAYA
                         MENYETUJUI SYARAT DAN KETENTUAN YANG BERLAKU DI LINGKUNGAN YAYASAN PONDOK PESANTREN
@@ -55,7 +55,7 @@
                 {{-- Tombol Lanjutkan --}}
                 <div class="mt-6 flex justify-center">
                     <button type="submit" :disabled="!agreed"
-                        class="w-full sm:w-auto inline-flex items-center justify-center px-12 py-2.5 bg-green-600 border border-transparent rounded-md font-semibold text-white uppercase tracking-widest hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-sm">
+                        class="w-full sm:w-auto inline-flex items-center justify-center px-12 py-2.5 bg-[#028579] border border-transparent rounded-md font-semibold text-white uppercase tracking-widest hover:bg-[#016a60] disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-sm">
                         Lanjutkan ke Pembayaran
                     </button>
                 </div>

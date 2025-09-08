@@ -1,6 +1,5 @@
 <?php
 
-
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\FormulirController as AdminFormulirController;
 use App\Http\Controllers\Admin\KeuanganController as AdminKeuanganController;
@@ -72,11 +71,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // --- Rute Profil (Menampilkan & Mengupdate Data Formulir) ---
     // Menggunakan FormulirController untuk menampilkan dan memperbarui data utama
 
-
     Route::get('/profile', [FormulirController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [FormulirController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
 
     // --- Rute Formulir Pendaftaran (Hanya untuk user baru) ---
 
@@ -90,7 +87,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/tnc/accept', [TncController::class, 'accept'])->name('tnc.accept');
 
 });
-
 
 // Memuat rute otentikasi dari Breeze (login, register, dll.)
 /*
