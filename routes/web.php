@@ -20,6 +20,30 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/informasi-biaya', function () {
+    return view('informasi-biaya');
+})->name('informasi-biaya');
+
+Route::get('/informasi-fasilitas', function () {
+    return view('informasi-fasilitas');
+})->name('informasi-fasilitas');
+
+Route::get('/informasi-pendaftaran', function () {
+    return view('informasi-pendaftaran');
+})->name('informasi-pendaftaran');
+
+Route::get('/petunjuk-pendaftaran', function () {
+    return view('petunjuk-pendaftaran');
+})->name('petunjuk-pendaftaran');
+
+Route::get('/petunjuk-pembayaran', function () {
+    return view('petunjuk-pembayaran');
+})->name('petunjuk-pembayaran');
+
+Route::get('/berita', function () {
+    return view('berita');
+})->name('berita');
+
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('dashboard');
 
