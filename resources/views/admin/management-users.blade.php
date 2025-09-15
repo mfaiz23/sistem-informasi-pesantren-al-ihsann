@@ -94,14 +94,14 @@
                             <p class="text-xs text-gray-500">Terdaftar: {{ $user->created_at->format('d/m/Y') }}</p>
                         </div>
                         <div class="flex space-x-2">
-                            <button @click="selectedUser = {{ json_encode($user) }}; modalOpen = true" class="p-2 text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200 focus:outline-none" aria-label="Detail">
+                            <button @click="selectedUser = {{ json_encode($user) }}; modalOpen = true" class="p-2 text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200 focus:outline-none" title="Lihat Detail" aria-label="Detail">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                             </button>
                             <a href="{{ route('admin.users.edit', $user) }}" class="p-2 text-green-600 bg-green-100 rounded-md hover:bg-green-200 focus:outline-none" aria-label="Edit">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg>
                             </a>
                             {{-- PERBAIKAN 2: Mengganti <form> dengan <button> untuk Mobile --}}
-                            <button @click="userToDelete = {{ json_encode($user) }}; deleteModalOpen = true"
+                            <button @click="userToDelete = {{ json_encode($user) }}; deleteModalOpen = true" title="hapus pengguna"
                                     class="p-2 text-red-600 bg-red-100 rounded-md hover:bg-red-200 focus:outline-none"
                                     aria-label="Delete">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
@@ -146,12 +146,12 @@
                         <td class="px-4 py-3 text-sm hidden lg:table-cell">{{ $user->created_at->format('d/m/Y H:i') }}</td>
                         <td class="px-4 py-3 text-sm">
                             <div class="flex items-center justify-center space-x-2">
-                                <button @click="selectedUser = {{ json_encode($user) }}; modalOpen = true" class="p-2 text-gray-500 transition-colors duration-200 rounded-lg hover:bg-gray-200 hover:text-blue-600 focus:outline-none" aria-label="Detail">
+                                <button @click="selectedUser = {{ json_encode($user) }}; modalOpen = true" class="p-2 text-gray-500 transition-colors duration-200 rounded-lg hover:bg-gray-200 hover:text-blue-600 focus:outline-none" title="Lihat Detail" aria-label="Detail">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                 </button>
 
                                 {{-- PERBAIKAN 3: Mengganti <form> dengan <button> untuk Desktop --}}
-                                <button @click="userToDelete = {{ json_encode($user) }}; deleteModalOpen = true"
+                                <button @click="userToDelete = {{ json_encode($user) }}; deleteModalOpen = true" title="Hapus Pengguna"
                                         class="p-2 text-gray-500 transition-colors duration-200 rounded-lg hover:bg-gray-200 hover:text-red-600 focus:outline-none"
                                         aria-label="Delete">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>

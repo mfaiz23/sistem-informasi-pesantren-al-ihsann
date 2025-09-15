@@ -20,16 +20,17 @@
         <div x-data="{ dropdownOpen: false }" class="relative">
             <button @click="dropdownOpen = ! dropdownOpen" class="relative block w-8 h-8 overflow-hidden rounded-full shadow focus:outline-none">
                 {{-- Menggunakan nama user yang sedang login untuk avatar --}}
-                <img class="object-cover w-full h-full" src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=22C55E&color=fff" alt="Your avatar">
+                <img class="object-cover w-full h-full" src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=028579&color=fff" alt="Your avatar">
             </button>
 
             <div x-show="dropdownOpen" @click.away="dropdownOpen = false" class="absolute right-0 w-48 mt-2 overflow-hidden bg-white rounded-md shadow-xl z-10" x-transition>
                 {{-- Form untuk Logout --}}
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
+
                     <a href="{{ route('logout') }}"
                        onclick="event.preventDefault(); this.closest('form').submit();"
-                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-500 hover:text-white">
+                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-[#028579]  hover:text-white">
                         Log Out
                     </a>
                 </form>

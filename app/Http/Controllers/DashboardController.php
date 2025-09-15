@@ -10,6 +10,11 @@ class DashboardController extends Controller
     public function index(): View
     {
         $user = Auth::user();
+
+        if (Auth::user()->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
         $formulir = $user->formulir;
 
         // Ambil invoice untuk formulir pendaftaran

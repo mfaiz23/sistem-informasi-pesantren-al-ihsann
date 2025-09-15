@@ -7,7 +7,7 @@
         {{-- Header Halaman - Mobile Optimized --}}
         <div class="flex flex-col items-start justify-between my-4 space-y-3 sm:my-6 sm:flex-row sm:items-center sm:space-y-0">
             <h2 class="text-xl font-semibold text-gray-800 sm:text-2xl">Keuangan</h2>
-            <a href="{{ route('admin.keuangan.cetak', request()->query()) }}" target="_blank" class="w-full sm:w-auto flex items-center justify-center px-4 py-3 text-sm font-medium text-white transition-colors duration-150 bg-green-600 border border-transparent rounded-lg shadow-md min-h-[48px] active:bg-green-600 hover:bg-green-700 focus:outline-none focus:shadow-outline-green">
+            <a href="{{ route('admin.keuangan.cetak', request()->query()) }}" target="_blank" class="w-full sm:w-auto flex items-center justify-center px-4 py-3 text-sm font-medium text-white transition-colors duration-150 bg-[#028579] hover:bg-[#016a60] border border-transparent rounded-lg shadow-md min-h-[48px] active:bg-green-600 focus:outline-none focus:shadow-outline-green">
                 <svg class="w-4 h-4 mr-2 -ml-1" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M5 4a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2H5zm0 2h10v6H5V6zm2 10h6v2H7v-2z" />
                 </svg>
@@ -86,7 +86,7 @@
                         </span>
 
                         <div class="flex space-x-2">
-                            <button @click="selectedPayment = {{ json_encode($invoice) }}; modalOpen = true"
+                            <button @click="selectedPayment = {{ json_encode($invoice) }}; modalOpen = true" title="Lihat Detail"
                                     class="p-2 text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200 focus:outline-none min-h-[44px] min-w-[44px]"
                                     aria-label="Detail">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -138,7 +138,7 @@
                         </td>
                         <td class="px-4 py-3 text-sm">
                             <div class="flex items-center justify-center space-x-2">
-                                <button @click="selectedPayment = {{ json_encode($invoice) }}; modalOpen = true"
+                                <button @click="selectedPayment = {{ json_encode($invoice) }}; modalOpen = true" title="Lihat Detail"
                                         class="p-2 text-gray-500 transition-colors duration-200 rounded-lg hover:bg-gray-200 hover:text-blue-600 focus:outline-none min-h-[44px] min-w-[44px]"
                                         aria-label="Detail">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -4,7 +4,7 @@
 $classes = 'flex items-center px-6 py-3 mt-4 transition-colors duration-200 transform ';
 
 $classes .= ($active)
-            ? 'bg-green-600 text-white rounded-md'
+            ? 'bg-[#028579] hover:bg-[#016a60] text-white rounded-md'
             : 'text-gray-600 hover:bg-gray-200 hover:text-gray-800 rounded-md';
 @endphp
 

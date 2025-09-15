@@ -45,7 +45,7 @@ Route::get('/berita', function () {
 })->name('berita');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])->name('dashboard');
+    ->middleware(['auth', 'verified', 'redirect-admin'])->name('dashboard');
 
 /*
 |--------------------------------------------------------------------------
