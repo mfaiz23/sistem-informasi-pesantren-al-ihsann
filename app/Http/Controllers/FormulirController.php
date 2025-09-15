@@ -20,9 +20,64 @@ class FormulirController extends Controller
     public function create(): View|RedirectResponse
     {
         $user = Auth::user();
-        $invoice = $user->invoices()->where('type', 'formulir')->first();
 
-        if (! $invoice || $invoice->status !== 'paid') {
+        \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
+        \Midtrans\Config::$isProduction = (bool) config('services.midtrans.is_production', false);
+        \Midtrans\Config::$isSanitized = true;
+        \Midtrans\Config::$is3ds = true;
+
+        $invoice = $user->invoices()
+            ->where('type', 'formulir')
+            ->where('status', 'paid')
+            ->exists();
+
+        if (! $invoice) {
+            $pending = $user->invoices()
+                ->where('type', 'formulir')
+                ->where('status', 'pending')
+                ->latest('id')
+                ->first();
+
+            if ($pending) {
+                try {
+                    $resp = \Midtrans\Transaction::status($pending->invoice_number);
+                    $ts = $resp->transaction_status ?? null;
+                    $paymentType = $resp->payment_type ?? null;
+                    $fraud = $resp->fraud_status ?? null;
+
+                    if ($ts === 'settlement' || ($ts === 'capture' && $paymentType === 'credit_card' && $fraud === 'accept')) {
+                        \DB::transaction(function () use ($user, $pending, $resp, $paymentType) {
+                            \App\Models\Payment::updateOrCreate(
+                                ['invoice_id' => $pending->id],
+                                [
+                                    'amount' => $pending->amount,
+                                    'status' => 'success',
+                                    'payment_method' => $paymentType,
+                                    'midtrans_order_id' => $pending->invoice_number,
+                                    'midtrans_transaction_id' => (string) ($resp->transaction_id ?? \Illuminate\Support\Str::uuid()),
+                                    'raw_response' => json_encode($resp),
+                                ]
+                            );
+                            $pending->update(['status' => 'paid', 'completed_at' => now()]);
+
+                            // Tutup pending lain (sisa race)
+                            \App\Models\Invoice::where('user_id', $user->id)
+                                ->where('type', 'formulir')
+                                ->where('status', 'pending')
+                                ->where('id', '!=', $pending->id)
+                                ->update(['status' => 'failed']);
+                        });
+
+                        $invoice = true;
+                    } elseif (in_array($ts, ['expire', 'cancel', 'deny'])) {
+                        $pending->update(['status' => 'failed']);
+                    }
+                } catch (\Throwable $e) {
+                }
+            }
+        }
+
+        if (! $invoice) {
             return redirect()->route('dashboard')->with('error', 'Anda harus menyelesaikan pembayaran terlebih dahulu sebelum mengisi formulir.');
         }
 
@@ -126,19 +181,9 @@ class FormulirController extends Controller
             if ($formulir->parent) {
                 $formulir->parent->update($validatedData);
             }
-
-            if ($formulir->status_pendaftaran == 'ditolak') {
-                $formulir->status_pendaftaran = 'menunggu_verifikasi';
-                $formulir->alasan_penolakan = null;
-                $formulir->save();
-            }
         });
 
-        $successMessage = $formulir->wasChanged('status_pendaftaran')
-            ? 'Formulir berhasil diperbarui dan telah diajukan kembali untuk verifikasi.'
-            : 'Data formulir berhasil diperbarui.';
-
-        return Redirect::route('profile.edit')->with('status', 'profile-updated')->with('success', $successMessage);
+        return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
     /**

@@ -68,6 +68,7 @@ class FormulirController extends Controller
      */
     public function show(string $id)
     {
+        $this->authorize('viewAny', Formulir::class);
         $formulir = Formulir::with(['user', 'alamat', 'parent', 'kipDocument'])->findOrFail($id);
 
         return response()->json($formulir);
