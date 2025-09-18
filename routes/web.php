@@ -1,10 +1,13 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\FaqController as AdminFaqController;
+use App\Http\Controllers\Admin\FaqTopicController as AdminFaqTopicController;
 use App\Http\Controllers\Admin\FormulirController as AdminFormulirController;
 use App\Http\Controllers\Admin\KeuanganController as AdminKeuanganController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FaqController;
 use App\Http\Controllers\FormulirController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
@@ -44,6 +47,10 @@ Route::get('/berita', function () {
     return view('berita');
 })->name('berita');
 
+Route::get('/faq', [FaqController::class, 'index'])->name('faq');
+
+Route::get('/faq/{topic:slug}', [FaqController::class, 'show'])->name('faq.topic.show');
+
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'redirect-admin'])->name('dashboard');
 
@@ -75,6 +82,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::get('/keuangan', [AdminKeuanganController::class, 'index'])->name('keuangan');
     Route::get('/keuangan/cetak', [AdminKeuanganController::class, 'cetakPdf'])->name('keuangan.cetak');
+
+    Route::resource('faq-topics', AdminFaqTopicController::class);
+    Route::resource('faq', AdminFaqController::class);
 
 });
 

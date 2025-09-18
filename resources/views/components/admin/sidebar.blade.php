@@ -40,5 +40,36 @@
             </x-slot>
             Keuangan
         </x-admin.nav-link>
+
+        <div x-data="{ open: {{ request()->routeIs('admin.faq-topics.*') || request()->routeIs('admin.faq.*') ? 'true' : 'false' }} }">
+            {{-- Tombol Parent Menu (disempurnakan agar sesuai nav-link.blade.php) --}}
+            <a href="#" @click.prevent="open = !open"
+               class="flex items-center justify-between w-full px-6 py-3 mt-4 text-left transition-colors duration-200 transform rounded-md"
+               :class="open ? 'bg-[#028579] text-white' : 'text-gray-600 hover:bg-gray-200 hover:text-gray-800'">
+
+                <span class="flex items-center">
+                    {{-- Ikon Tanda Tanya --}}
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span class="mx-4 font-medium">Manajemen FAQ</span>
+                </span>
+
+                {{-- Ikon Panah Dropdown --}}
+                <svg class="w-4 h-4 transform transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </a>
+
+            {{-- Sub-Menu Dropdown --}}
+            <div x-show="open" x-collapse class="mt-2 space-y-2">
+                <x-admin.nav-link href="{{ route('admin.faq-topics.index') }}" :active="request()->routeIs('admin.faq-topics.*')" class="pl-12">
+                    Topik
+                </x-admin.nav-link>
+
+                {{-- FIX: Change 'admin.faqs.*' to 'admin.faq.*' --}}
+                <x-admin.nav-link href="{{ route('admin.faq.index') }}" :active="request()->routeIs('admin.faq.*')" class="pl-12">
+                    Pertanyaan
+                </x-admin.nav-link>
+            </div>
+        </div>
     </nav>
 </aside>

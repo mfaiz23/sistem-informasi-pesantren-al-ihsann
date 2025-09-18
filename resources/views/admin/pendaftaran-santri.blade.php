@@ -35,28 +35,38 @@
             {{-- Filter Otomatis --}}
             <div class="mb-6 transition-all duration-300" :class="{'hidden': !showFilters && isMobile, 'block': showFilters || !isMobile}">
                 <form id="filter-form" action="{{ route('admin.pendaftaran') }}" method="GET">
-                    <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
-                        <div class="relative flex-grow w-full sm:max-w-xs">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <div class="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+                        <div class="relative md:w-64">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                             </span>
-                            <input id="search-input" name="search" value="{{ request('search') }}" class="w-full h-12 pl-10 pr-4 text-sm text-gray-700 placeholder-gray-600 bg-gray-100 border-0 rounded-md focus:placeholder-gray-500 focus:bg-white focus:border-indigo-300 focus:outline-none focus:shadow-outline-indigo form-input"
-                                   type="text" placeholder="Cari nama atau email..."/>
+                            <input id="search-input" name="search" value="{{ request('search') }}" class="w-full py-2.5 pl-10 pr-4 text-sm text-gray-800 placeholder-gray-500 bg-gray-100 border-transparent rounded-lg focus:ring-2 focus:ring-[#028579] focus:border-transparent" type="text" placeholder="Cari nama atau email..."/>
                         </div>
-                        <select name="type" onchange="this.form.submit()" class="w-full h-12 text-sm text-gray-700 bg-gray-100 border-0 rounded-md sm:w-auto focus:bg-white focus:border-indigo-300 focus:outline-none focus:shadow-outline-indigo form-select">
-                            <option value="">Semua Tipe</option>
-                            <option value="Reguler" {{ request('type') == 'Reguler' ? 'selected' : '' }}>Reguler</option>
-                            <option value="Non-Reguler" {{ request('type') == 'Non Reguler' ? 'selected' : '' }}>Non Reguler (KIP)</option>
-                        </select>
-                        <select name="status" onchange="this.form.submit()" class="w-full h-12 text-sm text-gray-700 bg-gray-100 border-0 rounded-md sm:w-auto focus:bg-white focus:border-indigo-300 focus:outline-none focus:shadow-outline-indigo form-select">
-                            <option value="">Semua Status</option>
-                            <option value="menunggu_verifikasi" {{ request('status') == 'menunggu_verifikasi' ? 'selected' : '' }}>Menunggu Verifikasi</option>
-                            <option value="diverifikasi" {{ request('status') == 'diverifikasi' ? 'selected' : '' }}>Diverifikasi</option>
-                            <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
-                        </select>
-                        <div class="flex items-center">
-                            <a href="{{ route('admin.pendaftaran') }}" class="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg sm:w-auto hover:bg-gray-300 focus:outline-none min-h-[48px]">Reset</a>
+                        <div class="relative md:w-52">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5a2 2 0 012 2v5a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2zm0 14h.01M7 17h5a2 2 0 012 2v5a2 2 0 01-2 2H7a2 2 0 01-2-2v-5a2 2 0 012-2z"></path></svg>
+                            </span>
+                            <select name="type" onchange="this.form.submit()" class="w-full py-2.5 pl-10 pr-8 text-sm text-gray-800 bg-gray-100 border-transparent rounded-lg appearance-none focus:ring-2 focus:ring-[#028579] focus:border-transparent">
+                                <option value="">Semua Tipe</option>
+                                <option value="Reguler" {{ request('type') == 'Reguler' ? 'selected' : '' }}>Reguler</option>
+                                <option value="Non-Reguler" {{ request('type') == 'Non Reguler' ? 'selected' : '' }}>Non Reguler (KIP)</option>
+                            </select>
                         </div>
+                        <div class="relative md:w-52">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </span>
+                            <select name="status" onchange="this.form.submit()" class="w-full py-2.5 pl-10 pr-8 text-sm text-gray-800 bg-gray-100 border-transparent rounded-lg appearance-none focus:ring-2 focus:ring-[#028579] focus:border-transparent">
+                                <option value="">Semua Status</option>
+                                <option value="menunggu_verifikasi" {{ request('status') == 'menunggu_verifikasi' ? 'selected' : '' }}>Menunggu Verifikasi</option>
+                                <option value="diverifikasi" {{ request('status') == 'diverifikasi' ? 'selected' : '' }}>Diverifikasi</option>
+                                <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
+                            </select>
+                        </div>
+                        <a href="{{ route('admin.pendaftaran') }}" class="flex items-center justify-center w-full px-4 py-2.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg md:w-auto hover:bg-gray-100 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 9a9 9 0 0114.13-5.12M20 15a9 9 0 01-14.13 5.12"></path></svg>
+                            Reset
+                        </a>
                     </div>
                 </form>
             </div>
@@ -115,30 +125,21 @@
                             <p class="text-xs text-gray-500">Terdaftar: {{ $santri->created_at->format('d/m/Y') }}</p>
                         </div>
                         <div class="flex space-x-2">
-                            {{-- Tombol Detail --}}
                             <button @click="selectedSantri = {{ json_encode($santri) }}; modalOpen = true" title="Lihat Detail" class="p-2 text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200 focus:outline-none" aria-label="Detail">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                             </button>
-
-                            {{-- Tombol Verifikasi (Aktif atau Nonaktif) --}}
                             @if($santri->status_pendaftaran == 'menunggu_verifikasi')
                                 <button @click="verifModalOpen = true; verifActionUrl = '{{ route('admin.formulir.verifikasi', ['id' => $santri->id]) }}'" title="Verifikasi Pendaftaran" class="p-2 text-green-600 bg-green-100 rounded-md hover:bg-green-200 focus:outline-none" aria-label="Verifikasi">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </button>
+                                <button @click="rejectModalOpen = true; rejectActionUrl = '{{ route('admin.formulir.tolak', ['id' => $santri->id]) }}'" title="Tolak Pendaftaran" class="p-2 text-gray-500 bg-gray-100 rounded-md hover:bg-red-100 hover:text-red-600 focus:outline-none" aria-label="Tolak">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
                                 </button>
                             @else
                                 <button title="Sudah Diproses" class="p-2 text-gray-400 bg-gray-100 rounded-md cursor-not-allowed opacity-50" aria-label="Verifikasi" disabled>
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                 </button>
                             @endif
-
-                            {{-- Tombol Tolak (Hanya Muncul Jika Perlu) --}}
-                            @if($santri->status_pendaftaran == 'menunggu_verifikasi')
-                                <button @click="rejectModalOpen = true; rejectActionUrl = '{{ route('admin.formulir.tolak', ['id' => $santri->id]) }}'" title="Tolak Pendaftaran" class="p-2 text-gray-500 bg-gray-100 rounded-md hover:bg-red-100 hover:text-red-600 focus:outline-none" aria-label="Tolak">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
-                                </button>
-                            @endif
-
-                            {{-- Tombol Hapus --}}
                             <button @click="santriToDelete = {{ json_encode($santri) }}; deleteModalOpen = true" title="Hapus Pendaftar" class="p-2 text-red-600 bg-red-100 rounded-md hover:bg-red-200 focus:outline-none" aria-label="Delete">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                             </button>
@@ -152,6 +153,7 @@
                 @endforelse
             </div>
 
+            {{-- ## KODE YANG DIPERBARUI ## --}}
             {{-- Tampilan Tabel Desktop --}}
             <div class="hidden overflow-x-auto md:block">
                 <table class="min-w-full divide-y divide-gray-200">
@@ -168,11 +170,11 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse ($formulirs as $santri)
                         <tr class="text-gray-700 transition-colors duration-200 hover:bg-gray-50">
-                            <td class="px-4 py-3 whitespace-nowrap">
+                            <td class="px-4 py-3">
                                 <div class="text-sm font-medium text-gray-900">{{ $santri->user->name ?? 'N/A' }}</div>
                                 <div class="text-xs text-gray-500 lg:hidden">{{ $santri->user ? $santri->user->email : 'N/A' }}</div>
                             </td>
-                            <td class="px-4 py-3 text-sm hidden lg:table-cell whitespace-nowrap">{{ $santri->user ? $santri->user->email : 'N/A' }}</td>
+                            <td class="px-4 py-3 text-sm hidden lg:table-cell">{{ $santri->user ? $santri->user->email : 'N/A' }}</td>
                             <td class="px-4 py-3 text-xs whitespace-nowrap">
                                 <span class="px-2 py-1 font-semibold leading-tight rounded-full {{ $santri->kategori_pendaftaran == 'Reguler' ? 'text-indigo-700 bg-indigo-100' : 'text-purple-700 bg-purple-100' }}">
                                     {{ $santri->kategori_pendaftaran ?? 'N/A' }}
@@ -199,30 +201,21 @@
                             </td>
                             <td class="px-4 py-3 text-sm whitespace-nowrap">
                                 <div class="flex items-center justify-center space-x-2">
-                                    {{-- Tombol Detail --}}
                                     <button @click="selectedSantri = {{ json_encode($santri) }}; modalOpen = true" title="Lihat Detail" class="p-2 text-gray-500 transition-colors duration-200 rounded-lg hover:bg-gray-200 hover:text-blue-600 focus:outline-none" aria-label="Detail">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                     </button>
-
-                                    {{-- Tombol Verifikasi (Aktif atau Nonaktif) --}}
                                     @if($santri->status_pendaftaran == 'menunggu_verifikasi')
                                         <button @click="verifModalOpen = true; verifActionUrl = '{{ route('admin.formulir.verifikasi', ['id' => $santri->id]) }}'" title="Verifikasi Pendaftaran" class="p-2 text-gray-500 rounded-lg hover:bg-gray-200 hover:text-green-600 transition-colors duration-200" aria-label="Verifikasi">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        </button>
+                                        <button @click="rejectModalOpen = true; rejectActionUrl = '{{ route('admin.formulir.tolak', ['id' => $santri->id]) }}'" title="Tolak Pendaftaran" class="p-2 text-gray-500 rounded-lg hover:bg-gray-200 hover:text-red-600 transition-colors duration-200" aria-label="Tolak">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
                                         </button>
                                     @else
                                         <button title="Sudah Diproses" class="p-2 text-gray-300 rounded-lg cursor-not-allowed opacity-50" aria-label="Verifikasi" disabled>
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                         </button>
                                     @endif
-
-                                    {{-- Tombol Tolak (Hanya Muncul Jika Perlu) --}}
-                                    @if($santri->status_pendaftaran == 'menunggu_verifikasi')
-                                        <button @click="rejectModalOpen = true; rejectActionUrl = '{{ route('admin.formulir.tolak', ['id' => $santri->id]) }}'" title="Tolak Pendaftaran" class="p-2 text-gray-500 rounded-lg hover:bg-gray-200 hover:text-red-600 transition-colors duration-200" aria-label="Tolak">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
-                                        </button>
-                                    @endif
-
-                                    {{-- Tombol Hapus --}}
                                     <button @click="santriToDelete = {{ json_encode($santri) }}; deleteModalOpen = true" title="Hapus Pendaftar" class="p-2 text-gray-500 rounded-lg hover:bg-gray-200 hover:text-red-600 transition-colors duration-200" aria-label="Delete">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                     </button>

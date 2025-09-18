@@ -1,8 +1,14 @@
-<div x-show="deleteModalOpen"
+<div
+    x-show="deleteModalOpen"
     class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75"
-    x-cloak>
-    <div x-show="deleteModalOpen" x-transition @click.outside="deleteModalOpen = false"
-        class="w-full max-w-md p-6 bg-white rounded-lg shadow-2xl">
+    x-cloak
+>
+    <div
+        x-show="deleteModalOpen"
+        x-transition
+        @click.outside="deleteModalOpen = false"
+        class="w-full max-w-md p-6 bg-white rounded-lg shadow-2xl"
+    >
         <div class="text-center">
             {{-- Ikon Peringatan --}}
             <svg class="w-16 h-16 mx-auto text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -15,10 +21,10 @@
             {{-- Pesan Konfirmasi --}}
             <div class="mt-2 text-gray-600">
                 <p>
-                    Apakah Anda yakin ingin menghapus data pendaftaran santri?
+                    Apakah Anda yakin ingin menghapus pertanyaan ini?
                 </p>
-                {{-- Menampilkan nama santri yang akan dihapus --}}
-                <p x-text="santriToDelete ? `Nama: ${santriToDelete.user.name}` : ''" class="mt-2 text-sm italic font-medium text-gray-800 bg-gray-100 rounded-md p-2"></p>
+                {{-- Menampilkan kutipan pertanyaan yang akan dihapus --}}
+                <p x-text="faqToDelete ? `&ldquo;${faqToDelete.pertanyaan.substring(0, 100)}...&rdquo;` : ''" class="mt-2 text-sm italic font-medium text-gray-800 bg-gray-100 rounded-md p-2"></p>
                 <p class="mt-3 text-sm">
                     Tindakan ini **tidak dapat dibatalkan**.
                 </p>
@@ -28,13 +34,13 @@
         {{-- Tombol Aksi --}}
         <div class="mt-6 flex justify-center space-x-4">
             {{-- Tombol Batal --}}
-            <button @click="deleteModalOpen = false; santriToDelete = null"
+            <button @click="deleteModalOpen = false; faqToDelete = null"
                 class="w-full px-4 py-2.5 font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 sm:w-auto">
                 Batal
             </button>
 
-            {{-- Form Hapus (Fungsi tidak berubah) --}}
-            <form x-show="santriToDelete" :action="santriToDelete ? `{{ url('admin/formulir') }}/${santriToDelete.id}` : ''" method="POST" class="w-full sm:w-auto">
+            {{-- Form Hapus --}}
+            <form x-show="faqToDelete" :action="faqToDelete ? `{{ url('admin/faq') }}/${faqToDelete.id}` : ''" method="POST" class="w-full sm:w-auto">
                 @csrf
                 @method('DELETE')
                 <button type="submit"

@@ -1,29 +1,24 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', 'PSB Al-Ihsan')</title>
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
-
-    {{-- Ganti Font ke Poppins --}}
+    {{-- Poppins Font --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    {{-- Scripts Vite --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+<body class="font-sans antialiased bg-gray-50">
+    <x-landing.header />
 
-<body class="font-sans text-gray-900 antialiased">
-    <div class="min-h-screen flex flex-col items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-gray-900">
-        <div class="flex-grow flex flex-col sm:justify-center items-center w-full">
-            {{ $slot }}
-        </div>
-        <x-app-footer />
-    </div>
+    <main>
+        @yield('content')
+    </main>
+
+    <x-landing.footer />
 </body>
-
 </html>

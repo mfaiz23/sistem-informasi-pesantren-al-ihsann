@@ -143,6 +143,10 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         // Cek apakah user yang akan dihapus bukan admin yang sedang login
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.management-users')->with('error', 'Akun dengan role Admin tidak dapat dihapus.');
+        }
+
         if ($user->id === auth()->id()) {
             return redirect()->route('admin.management-users')->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
         }
