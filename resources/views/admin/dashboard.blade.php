@@ -1,5 +1,4 @@
 <x-admin-layout>
-    {{-- 1. HEADER --}}
     <div class="flex flex-col items-start justify-between my-6 space-y-4 md:flex-row md:items-center md:space-y-0">
         <div>
             <h2 class="text-2xl font-semibold text-gray-800">Selamat Datang Kembali! 👋</h2>

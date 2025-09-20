@@ -159,7 +159,7 @@ class FormulirController extends Controller
             'alasan_penolakan' => 'required|string|min:10|max:1000',
         ]);
 
-        $formulir = Formulir::with('user')->findOrFail($id);
+        $formulir = Formulir::with('user', 'kipDocument')->findOrFail($id); // Eager load kipDocument
 
         // 1. Pemeriksaan Status yang Konsisten
         if ($formulir->status_pendaftaran !== 'menunggu_verifikasi') {
@@ -170,6 +170,11 @@ class FormulirController extends Controller
         $formulir->status_pendaftaran = 'ditolak';
         $formulir->alasan_penolakan = $request->input('alasan_penolakan');
         $formulir->save();
+
+        // Jika ada dokumen KIP, ubah juga status verifikasinya menjadi "tidak valid".
+        if ($formulir->kipDocument) {
+            $formulir->kipDocument->update(['status_verifikasi' => 'tidak_valid']);
+        }
 
         // 3. Kirim Email Notifikasi dengan Penanganan Error yang Lebih Baik
         try {

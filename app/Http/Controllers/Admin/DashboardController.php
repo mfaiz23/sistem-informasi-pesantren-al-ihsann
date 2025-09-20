@@ -3,11 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Berita;
+use App\Models\Faq;
+use App\Models\FaqTopic;
 use App\Models\Formulir;
 use App\Models\Invoice;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Number;
+use Illuminate\Support\Str;
 
 class DashboardController extends Controller
 {
@@ -16,39 +20,54 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        // 1. MENGAMBIL TOTAL PENGGUNA
+
         $totalPengguna = User::count();
 
-        // 2. MENGAMBIL TOTAL PENDAPATAN (dari invoice yang sudah lunas)
         $totalPendapatanValue = Invoice::where('status', 'paid')->sum('amount');
-        // Format angka menjadi lebih ringkas (misal: 15700000 -> "Rp 15.7 Jt")
         $totalPendapatan = 'Rp '.Number::abbreviate($totalPendapatanValue, maxPrecision: 1);
 
-        // 3. MENGAMBIL 5 PENGGUNA TERBARU
         $penggunaTerbaru = User::latest()->take(5)->get();
 
-        // 4. MENGAMBIL AKTIVITAS TERBARU (gabungan dari beberapa model)
-        // Ambil 5 pendaftaran formulir terbaru
         $aktivitasPendaftaran = Formulir::with('user')->latest()->take(5)->get()->map(function ($item) {
+            return ['type' => 'user', 'title' => 'Pendaftar baru \''.($item->user->name ?? 'N/A').'\' mengisi formulir.', 'time' => $item->created_at];
+        });
+
+        $aktivitasPembayaran = Invoice::with('user')->where('status', 'paid')->latest('completed_at')->take(5)->get()->map(function ($item) {
+            return ['type' => 'payment', 'title' => 'Pembayaran lunas dari \''.($item->user->name ?? 'N/A').'\'.', 'time' => $item->completed_at];
+        });
+
+        $aktivitasBerita = Berita::with('user')->latest('created_at')->take(5)->get()->map(function ($item) {
             return [
-                'type' => 'user',
-                'title' => 'Pendaftar baru \''.($item->user->name ?? 'N/A').'\' mengisi formulir.',
+                'type' => 'berita_created',
+                'title' => ($item->user->name ?? 'Admin')." membuat berita baru: '".Str::limit($item->judul, 25)."'",
                 'time' => $item->created_at,
             ];
         });
 
-        // Ambil 5 pembayaran terbaru yang berhasil
-        $aktivitasPembayaran = Invoice::with('user')->where('status', 'paid')->latest('completed_at')->take(5)->get()->map(function ($item) {
+        // DITAMBAHKAN: Mengambil 5 FAQ terbaru yang dibuat
+        $aktivitasFaq = Faq::with('user')->latest('created_at')->take(5)->get()->map(function ($item) {
             return [
-                'type' => 'payment',
-                'title' => 'Pembayaran lunas dari \''.($item->user->name ?? 'N/A').'\'.',
-                'time' => $item->completed_at,
+                'type' => 'faq_created',
+                'title' => ($item->user->name ?? 'Admin')." membuat FAQ baru: '".Str::limit($item->pertanyaan, 25)."'",
+                'time' => $item->created_at,
             ];
         });
 
-        // Gabungkan semua aktivitas, urutkan berdasarkan waktu, dan ambil 5 teratas
+        // DITAMBAHKAN: Mengambil 5 Topik FAQ terbaru yang dibuat
+        $aktivitasFaqTopic = FaqTopic::latest('created_at')->take(5)->get()->map(function ($item) {
+            return [
+                'type' => 'topic_created',
+                'title' => "Seorang admin membuat topik baru: '{$item->name}'",
+                'time' => $item->created_at,
+            ];
+        });
+
+        // Gabungkan SEMUA aktivitas, urutkan, dan ambil 5 yang paling baru
         $aktivitasTerbaru = collect($aktivitasPendaftaran)
             ->merge($aktivitasPembayaran)
+            ->merge($aktivitasBerita)       // DITAMBAHKAN
+            ->merge($aktivitasFaq)          // DITAMBAHKAN
+            ->merge($aktivitasFaqTopic)     // DITAMBAHKAN
             ->sortByDesc('time')
             ->take(5);
 

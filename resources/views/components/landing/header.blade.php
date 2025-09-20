@@ -34,7 +34,7 @@
                     </div>
                 </div>
 
-                <a href="{{ route('berita') }}" class="text-gray-700 hover:text-green-600">Berita</a>
+                <a href="{{ route('berita.index') }}" class="text-gray-700 hover:text-green-600">Berita</a>
 
                 {{-- INI MENU BARU YANG DITAMBAHKAN --}}
                 <a href="{{ route('faq') }}" class="text-gray-700 hover:text-green-600">FAQ</a>
@@ -63,7 +63,7 @@
         <div :class="{'block': open, 'hidden': !open}" class="md:hidden mt-4">
             <a href="{{ route('informasi-pendaftaran') }}" class="block py-2 text-gray-700">Informasi Pendaftaran</a>
             <a href="{{ route('petunjuk-pendaftaran') }}" class="block py-2 text-gray-700">Petunjuk Pendaftaran</a>
-            <a href="{{ route('berita') }}" class="block py-2 text-gray-700">Berita</a>
+            <a href="{{ route('berita.index') }}" class="block py-2 text-gray-700">Berita</a>
 
             {{-- INI MENU BARU YANG DITAMBAHKAN (MOBILE) --}}
             <a href="{{ route('faq') }}" class="block py-2 text-gray-700">FAQ</a>

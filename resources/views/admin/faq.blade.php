@@ -29,7 +29,7 @@
         </div>
 
         {{-- Panel Konten Utama --}}
-        <div class="p-3 bg-white rounded-lg shadow-md sm:p-6">
+        <div class="p-3 bg-white rounded-lg shadow-md sm:p-6 overflow-x-auto">
             <div class="flex flex-col items-start justify-between mb-4 space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:mb-6">
                 <h3 class="text-lg font-semibold text-gray-700">Data Pertanyaan (FAQ)</h3>
                 <button @click="showFilters = !showFilters" class="flex items-center px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-md sm:hidden hover:bg-gray-50">

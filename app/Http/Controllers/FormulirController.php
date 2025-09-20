@@ -164,14 +164,24 @@ class FormulirController extends Controller
             }
 
             $kipDocumentPath = $request->file('dokumen_kip')->store('dokumen-kip', 'public');
+
             $formulir->kipDocument()->updateOrCreate(
                 ['formulir_id' => $formulir->id],
-                ['dokumen_path' => $kipDocumentPath]
+                [
+                    'dokumen_path' => $kipDocumentPath,
+                    'status_verifikasi' => 'menunggu',
+                ]
             );
         }
 
         DB::transaction(function () use ($formulir, $validatedData) {
             $formulirData = collect($validatedData)->except('dokumen_kip')->toArray();
+
+            if ($formulir->status_pendaftaran === 'ditolak') {
+                $formulirData['status_pendaftaran'] = 'menunggu_verifikasi';
+                $formulirData['alasan_penolakan'] = null;
+            }
+
             $formulir->update($formulirData);
 
             if ($formulir->alamat) {

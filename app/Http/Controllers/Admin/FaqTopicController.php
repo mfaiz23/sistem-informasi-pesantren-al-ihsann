@@ -53,7 +53,7 @@ class FaqTopicController extends Controller
      */
     public function create()
     {
-        return view('components.admin.faq.topics.create-topics-modal');
+        // return view('components.admin.faq.topics.create-topics-modal');
     }
 
     /**
@@ -80,7 +80,7 @@ class FaqTopicController extends Controller
      */
     public function edit(FaqTopic $faqTopic)
     {
-        return view('comnponents.admin.faq.topics.edit-topics-modal', compact('faqTopic'));
+        // return view('comnponents.admin.faq.topics.edit-topics-modal', compact('faqTopic'));
     }
 
     /**

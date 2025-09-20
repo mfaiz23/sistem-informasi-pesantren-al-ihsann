@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\Admin\BeritaController as AdminBeritaController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\FaqController as AdminFaqController;
 use App\Http\Controllers\Admin\FaqTopicController as AdminFaqTopicController;
 use App\Http\Controllers\Admin\FormulirController as AdminFormulirController;
 use App\Http\Controllers\Admin\KeuanganController as AdminKeuanganController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FaqController;
 use App\Http\Controllers\FormulirController;
@@ -43,9 +45,9 @@ Route::get('/petunjuk-pembayaran', function () {
     return view('petunjuk-pembayaran');
 })->name('petunjuk-pembayaran');
 
-Route::get('/berita', function () {
-    return view('berita');
-})->name('berita');
+Route::get('/berita', [BeritaController::class, 'index'])->name('berita.index');
+
+Route::get('/berita/{id}', [BeritaController::class, 'show'])->name('berita.show');
 
 Route::get('/faq', [FaqController::class, 'index'])->name('faq');
 
@@ -85,6 +87,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::resource('faq-topics', AdminFaqTopicController::class);
     Route::resource('faq', AdminFaqController::class);
+
+    Route::resource('berita', AdminBeritaController::class)->parameter('berita', 'berita');
+    Route::patch('/berita/{berita}/status', [AdminBeritaController::class, 'updateStatus'])->name('berita.updateStatus');
 
 });
 

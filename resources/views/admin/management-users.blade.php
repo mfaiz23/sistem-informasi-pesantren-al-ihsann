@@ -20,7 +20,7 @@
         </div>
 
         {{-- Panel Konten Utama --}}
-        <div class="p-3 bg-white rounded-lg shadow-md sm:p-6">
+        <div class="p-3 bg-white rounded-lg shadow-md sm:p-6 overflow-x-auto">
             <div class="flex flex-col items-start justify-between mb-4 space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:mb-6">
                 <h3 class="text-lg font-semibold text-gray-700">Data Pengguna</h3>
                 <button @click="showFilters = !showFilters" class="flex items-center px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-md sm:hidden hover:bg-gray-50">
@@ -40,7 +40,6 @@
                             </span>
                             <input id="search-input" name="search" value="{{ request('search') }}" class="w-full py-2.5 pl-10 pr-4 text-sm text-gray-800 placeholder-gray-500 bg-gray-100 border-transparent rounded-lg focus:ring-2 focus:ring-[#028579] focus:border-transparent" type="text" placeholder="Cari nama atau email..."/>
                         </div>
-                        {{-- ... sisa dropdown dan tombol reset tetap sama ... --}}
                         <div class="relative md:w-52">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>

@@ -16,7 +16,7 @@
         </div>
 
         {{-- Main Content Panel - Responsive Table --}}
-        <div class="p-3 bg-white rounded-lg shadow-md sm:p-6">
+        <div class="p-3 bg-white rounded-lg shadow-md sm:p-6 overflow-x-auto">
             {{-- START: MODIFIED SECTION --}}
             <div class="flex flex-col items-start justify-between mb-4 space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:mb-6">
                 <h3 class="text-lg font-semibold text-gray-700">Data Pembayaran</h3>
@@ -26,11 +26,8 @@
                     Filter & Pencarian
                 </button>
             </div>
-            {{-- END: MODIFIED SECTION --}}
-
 
             {{-- Responsive Filters --}}
-            {{-- keuangan.blade.php --}}
             <form action="{{ route('admin.keuangan') }}" method="GET">
                 <div class="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
                     {{-- DIUBAH: kelas 'flex-grow' dihapus dan diganti 'md:w-64' --}}
