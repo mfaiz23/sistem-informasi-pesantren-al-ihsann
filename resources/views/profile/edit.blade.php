@@ -38,8 +38,9 @@
                             @include('formulir.partials.data-orang-tua', ['parent' => $formulir->parent])
 
                             <div class="flex justify-center mt-8">
-                                <x-primary-button class="bg-green-600 hover:bg-green-700">
-                                    {{ __('SIMPAN PERUBAHAN') }}
+                                <x-primary-button
+                                    class="!bg-[#028579] hover:!bg-[#016e63] active:!bg-[#016e63] focus:!ring-[#016e63]">
+                                    {{ __('Simpan Perubahan') }}
                                 </x-primary-button>
                             </div>
                     </form>

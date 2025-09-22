@@ -4,12 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Invoice;
 use App\Models\Payment;
-use App\Notifications\PaymentSuccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Midtrans\Config;
 use Midtrans\Notification;
 use Midtrans\Snap;
@@ -255,12 +253,5 @@ class PaymentController extends Controller
                 'raw_response' => json_encode($notif->getResponse()),
             ]
         );
-        try {
-            $user = $invoice->user;
-            $user->notify(new PaymentSuccess($invoice));
-        } catch (\Exception $e) {
-            // Jika email gagal dikirim, catat error tapi jangan hentikan proses
-            Log::error('Gagal mengirim notifikasi pembayaran untuk invoice '.$invoice->invoice_number.': '.$e->getMessage());
-        }
     }
 }

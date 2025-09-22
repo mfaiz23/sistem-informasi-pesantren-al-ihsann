@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class FormulirController extends Controller
@@ -208,7 +209,12 @@ class FormulirController extends Controller
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
             'nik' => 'required|numeric|digits:16',
             'kategori_pendaftaran' => 'required|in:Reguler,Non-Reguler',
-            'no_kip' => 'required_if:kategori_pendaftaran,Non-Reguler|nullable|string|max:255',
+            'no_kip' => [
+                Rule::requiredIf($request->kategori_pendaftaran === 'Non-Reguler'),
+                'nullable',
+                'string',
+                'max:255',
+            ],
 
             'asal_sd' => 'nullable|string|max:255',
             'tahun_lulus_sd' => 'nullable|string|size:4',
@@ -234,6 +240,17 @@ class FormulirController extends Controller
             'alamat' => 'required|string',
             'hubungan_keluarga' => 'required|string|max:255',
         ];
+
+        // Tambahkan aturan unique hanya jika kategori pendaftaran adalah Non-Reguler
+        if ($request->kategori_pendaftaran === 'Non-Reguler') {
+            // Tambahkan validasi unique
+            $uniqueRule = Rule::unique('formulirs', 'no_kip');
+            // Jika ini adalah proses update, abaikan data milik user sendiri
+            if ($isUpdate) {
+                $uniqueRule->ignore($request->user()->formulir->id, 'id');
+            }
+            $rules['no_kip'][] = $uniqueRule;
+        }
 
         $rules['dokumen_kip'] = $isUpdate
             ? 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120'
