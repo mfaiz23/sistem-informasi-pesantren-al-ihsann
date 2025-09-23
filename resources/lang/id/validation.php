@@ -33,6 +33,7 @@ return [
     ],
     'string' => 'Kolom :attribute harus berupa string.',
     'unique' => ':attribute ini sudah terdaftar.',
+    'uploaded' => 'Kolom :attribute gagal diunggah.',
 
     'numeric' => 'Kolom :attribute harus berupa angka.',
     'min' => [
