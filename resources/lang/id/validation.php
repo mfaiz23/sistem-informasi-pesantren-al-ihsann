@@ -9,6 +9,8 @@ return [
     */
 
     'accepted' => 'Kolom :attribute harus diterima.',
+    'after_or_equal' => 'Kolom :attribute harus berupa tanggal setelah atau sama dengan :date.',
+    'before_or_equal' => 'Kolom :attribute harus berupa tanggal sebelum atau sama dengan :date.',
     'current_password' => 'Kata sandi yang diberikan tidak cocok dengan kata sandi Anda saat ini.',
     'date' => 'Kolom :attribute bukan tanggal yang valid.',
     'date_format' => 'Kolom :attribute tidak cocok dengan format :format.',

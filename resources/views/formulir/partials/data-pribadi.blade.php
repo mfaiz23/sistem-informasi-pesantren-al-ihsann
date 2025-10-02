@@ -9,7 +9,7 @@
     jenis_kelamin: '{{ old('jenis_kelamin', optional($formulir)->jenis_kelamin ?? '') }}',
     nik: '{{ old('nik', optional($formulir)->nik ?? '') }}',
     kategori: '{{ old('kategori_pendaftaran', optional($formulir)->kategori_pendaftaran ?? 'Reguler') }}',
-    no_kip: '{{ old('no_kip', optional($formulir)->no_kip ?? '') }}',
+    no_kip: '{{ old('no_kip', optional(optional($formulir)->kipDocument)->no_kip ?? '') }}',
     dokumen_kip: null,
     isKipFilled() {
         if (this.kategori !== 'Non-Reguler') return true;
@@ -130,7 +130,7 @@
                             'bg-gray-100' => $disabled,
                         ])>
                             <div class="text-sm text-gray-700 px-3 truncate">
-                                <span x-show="dokumen_kip" x-text="dokumen_kip.name"></span>
+                                <span x-show="dokumen_kip" x-text="dokumen_kip ? dokumen_kip.name : ''"></span>
                                 @if (isset($formulir) && $formulir->kipDocument)
                                     <a href="{{ asset('storage/' . $formulir->kipDocument->dokumen_path) }}" target="_blank"
                                         x-show="!dokumen_kip" class="hover:text-blue-600 transition">

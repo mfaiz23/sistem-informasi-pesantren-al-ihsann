@@ -108,8 +108,8 @@ class FormulirController extends Controller
             $kipDocumentPath = $request->file('dokumen_kip')->store('dokumen-kip', 'public');
         }
 
-        DB::transaction(function () use ($validatedData, $kipDocumentPath) {
-            $formulirData = collect($validatedData)->except('dokumen_kip')->toArray();
+        DB::transaction(function () use ($validatedData, $kipDocumentPath) { // Tambahkan $request
+            $formulirData = collect($validatedData)->except(['dokumen_kip', 'no_kip'])->toArray(); // Jangan simpan no_kip di tabel formulir
             $formulir = Formulir::create(array_merge($formulirData, ['user_id' => Auth::id()]));
 
             $formulir->alamat()->create($validatedData);
@@ -119,6 +119,7 @@ class FormulirController extends Controller
                 KipDocument::create([
                     'formulir_id' => $formulir->id,
                     'dokumen_path' => $kipDocumentPath,
+                    'no_kip' => $validatedData['no_kip'],
                 ]);
             }
         });
@@ -163,20 +164,23 @@ class FormulirController extends Controller
             if ($formulir->kipDocument && $formulir->kipDocument->dokumen_path) {
                 Storage::disk('public')->delete($formulir->kipDocument->dokumen_path);
             }
-
             $kipDocumentPath = $request->file('dokumen_kip')->store('dokumen-kip', 'public');
-
             $formulir->kipDocument()->updateOrCreate(
                 ['formulir_id' => $formulir->id],
                 [
                     'dokumen_path' => $kipDocumentPath,
-                    'status_verifikasi' => 'menunggu',
+                    'no_kip' => $validatedData['no_kip'],
                 ]
             );
+        } elseif ($request->kategori_pendaftaran === 'Non-Reguler') {
+            // Jika tidak ada file baru diupload, tapi no_kip mungkin berubah
+            if ($formulir->kipDocument) {
+                $formulir->kipDocument->update(['no_kip' => $validatedData['no_kip']]);
+            }
         }
 
         DB::transaction(function () use ($formulir, $validatedData) {
-            $formulirData = collect($validatedData)->except('dokumen_kip')->toArray();
+            $formulirData = collect($validatedData)->except(['dokumen_kip', 'no_kip'])->toArray(); // Jangan update no_kip di tabel formulir
 
             if ($formulir->status_pendaftaran === 'ditolak') {
                 $formulirData['status_pendaftaran'] = 'menunggu_verifikasi';
@@ -207,7 +211,12 @@ class FormulirController extends Controller
             'tempat_lahir' => 'required|string|max:255',
             'tanggal_lahir' => 'required|date_format:Y-m-d|before_or_equal:today',
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
-            'nik' => 'required|numeric|digits:16',
+            'nik' => [
+                'required',
+                'numeric',
+                'digits:16',
+                Rule::unique('formulirs', 'nik')->ignore(optional($request->user()->formulir)->id),
+            ],
             'kategori_pendaftaran' => 'required|in:Reguler,Non-Reguler',
             'no_kip' => [
                 Rule::requiredIf($request->kategori_pendaftaran === 'Non-Reguler'),
@@ -215,39 +224,36 @@ class FormulirController extends Controller
                 'string',
                 'max:255',
             ],
-
             'asal_sd' => 'nullable|string|max:255',
-            'tahun_lulus_sd' => 'nullable|string|size:4',
+            'tahun_lulus_sd' => 'nullable|date_format:Y|after_or_equal:1950|before_or_equal:'.date('Y'),
             'asal_smp' => 'nullable|string|max:255',
-            'tahun_lulus_smp' => 'nullable|string|size:4',
+            'tahun_lulus_smp' => 'nullable|date_format:Y|after_or_equal:1950|before_or_equal:'.date('Y'),
             'asal_sma' => 'nullable|string|max:255',
-            'tahun_lulus_sma' => 'nullable|string|size:4',
+            'tahun_lulus_sma' => 'nullable|date_format:Y|after_or_equal:1950|before_or_equal:'.date('Y'),
             'asal_universitas' => 'nullable|string|max:255',
             'jurusan' => 'nullable|string|max:255',
             'fakultas' => 'nullable|string|max:255',
             'semester' => 'nullable|string|max:255',
             'angkatan' => 'nullable|string|max:255',
-
             'negara' => 'required|string|max:255',
             'provinsi' => 'required|string|max:255',
             'kota_kabupaten' => 'required|string|max:255',
             'kecamatan' => 'required|string|max:255',
             'desa_kelurahan' => 'required|string|max:255',
             'alamat_lengkap' => 'required|string',
-
             'nama_lengkap' => 'required|string|max:255',
             'no_telp' => 'required|string|max:15',
             'alamat' => 'required|string',
             'hubungan_keluarga' => 'required|string|max:255',
         ];
 
-        // Tambahkan aturan unique hanya jika kategori pendaftaran adalah Non-Reguler
         if ($request->kategori_pendaftaran === 'Non-Reguler') {
-            // Tambahkan validasi unique
-            $uniqueRule = Rule::unique('formulirs', 'no_kip');
-            // Jika ini adalah proses update, abaikan data milik user sendiri
-            if ($isUpdate) {
-                $uniqueRule->ignore($request->user()->formulir->id, 'id');
+            // <<< PERBAIKAN 2: Arahkan validasi unique ke tabel 'kip_documents'
+            $uniqueRule = Rule::unique('kip_documents', 'no_kip');
+
+            if ($isUpdate && $request->user()->formulir?->kipDocument) {
+                // Abaikan ID dokumen KIP yang sudah ada saat update
+                $uniqueRule->ignore($request->user()->formulir->kipDocument->id);
             }
             $rules['no_kip'][] = $uniqueRule;
         }
