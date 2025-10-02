@@ -14,9 +14,6 @@ class Invoice extends Model
     protected $guarded = [];
 
     /**
-     * Memberitahu Eloquent untuk mengubah kolom ini menjadi objek Carbon (Tanggal).
-     * INI ADALAH PERBAIKANNYA.
-     *
      * @var array
      */
     protected $casts = [

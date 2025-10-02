@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Berita;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class BeritaController extends Controller
 {
@@ -55,8 +55,9 @@ class BeritaController extends Controller
         $path = null;
         if ($request->hasFile('gambar')) {
             $imageName = time().'.'.$request->gambar->extension();
-            $request->gambar->move(public_path('storage/berita'), $imageName);
+            $request->gambar->storeAs('berita', $imageName, 'public');
             $path = 'berita/'.$imageName;
+
         }
 
         Berita::create([
@@ -101,11 +102,12 @@ class BeritaController extends Controller
 
         $path = $berita->gambar;
         if ($request->hasFile('gambar')) {
-            if ($berita->gambar && File::exists(public_path('storage/'.$berita->gambar))) {
-                File::delete(public_path('storage/'.$berita->gambar));
+            if ($berita->gambar) {
+                Storage::disk('public')->delete($berita->gambar);
             }
             $imageName = time().'.'.$request->gambar->extension();
-            $request->gambar->move(public_path('storage/berita'), $imageName);
+            // Simpan gambar baru menggunakan Storage facade
+            $request->gambar->storeAs('berita', $imageName, 'public');
             $path = 'berita/'.$imageName;
         }
 
@@ -125,8 +127,8 @@ class BeritaController extends Controller
      */
     public function destroy(Berita $berita)
     {
-        if ($berita->gambar && File::exists(public_path('storage/'.$berita->gambar))) {
-            File::delete(public_path('storage/'.$berita->gambar));
+        if ($berita->gambar) {
+            Storage::disk('public')->delete($berita->gambar);
         }
 
         $berita->delete();

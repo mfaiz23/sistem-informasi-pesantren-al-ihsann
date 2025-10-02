@@ -89,23 +89,46 @@
                 </div>
             </div>
 
-            {{-- Kartu Indonesia Pintar (KIP) - Hanya untuk Non-Reguler --}}
+
+           {{-- Kartu Indonesia Pintar (KIP) - Hanya untuk Non-Reguler --}}
             <div class="mb-6 pb-6 border-b border-gray-200" x-show="selectedSantri.kategori_pendaftaran === 'Non-Reguler'">
                 <h4 class="text-lg font-semibold text-gray-800 mb-4">Kartu Indonesia Pintar (KIP)</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <span class="block text-sm font-semibold text-gray-600">Nomor Kartu Indonesia Pintar (KIP)</span>
-                        <p class="text-gray-900" x-text="selectedSantri.no_kip || 'N/A'"></p>
+                        <p class="text-gray-900" x-text="selectedSantri.kip_document ? selectedSantri.kip_document.no_kip : 'N/A'"></p>
                     </div>
                     <div>
                         <span class="block text-sm font-semibold text-gray-600">Dokumen KIP</span>
-                        <div x-show="selectedSantri.kip_document">
-                            <a :href="'{{ url('admin/formulir/download-kip') }}/' + selectedSantri.kip_document.id" target="_blank" class="inline-flex items-center px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13l-3 3m0 0l-3-3m3 3V8m0 13a9 9 0 110-18 9 9 0 010 18z"></path></svg>
-                                Unduh Dokumen
-                            </a>
-                        </div>
-                        <p x-show="!selectedSantri.kip_document" class="text-gray-500">Tidak ada dokumen</p>
+
+                        {{-- Menggunakan <template> untuk rendering kondisional yang lebih bersih dan aman --}}
+                        <template x-if="selectedSantri.kip_document && selectedSantri.kip_document.dokumen_path">
+                            <div class="mt-2">
+                                {{-- Tombol Unduh --}}
+                                <a :href="`{{ url('admin/formulir/download-kip') }}/${selectedSantri.kip_document.id}`" target="_blank" class="inline-flex items-center px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13l-3 3m0 0l-3-3m3 3V8m0 13a9 9 0 110-18 9 9 0 010 18z"></path></svg>
+                                    Unduh Dokumen
+                                </a>
+
+                                {{-- Preview Dokumen --}}
+                                <div class="mt-4">
+                                    <h5 class="text-sm font-semibold text-gray-600 mb-2">Preview Dokumen</h5>
+                                    <div class="relative">
+                                        {{-- src path yang benar dengan fallback jika error --}}
+                                        <img :src="`{{ asset('storage') }}/${selectedSantri.kip_document.dokumen_path}`"
+                                            alt="Preview Dokumen KIP"
+                                            class="max-w-xs max-h-48 rounded border border-gray-200 shadow-sm object-contain"
+                                            x-on:error="$el.src='https://via.placeholder.com/300x200?text=Preview+Gagal+Dimuat'"
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        {{-- Pesan ini hanya muncul jika tidak ada dokumen sama sekali --}}
+                        <template x-if="!selectedSantri.kip_document || !selectedSantri.kip_document.dokumen_path">
+                            <p class="text-gray-500 mt-2">Tidak ada dokumen yang diunggah.</p>
+                        </template>
                     </div>
                 </div>
             </div>
