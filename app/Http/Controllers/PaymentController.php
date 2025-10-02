@@ -39,15 +39,18 @@ class PaymentController extends Controller
         $invoice = null;
 
         try {
-            // Kunci berbasis cache (Redis/Memcached). Lease 10 detik.
             $lock = Cache::lock('invoice:formulir:user:'.$user->id, 10);
             $invoice = $lock->block(5, function () use ($user) {
-                // Re-check di dalam lock
                 $existing = Invoice::where('user_id', $user->id)
                     ->where('type', 'formulir')
                     ->where('status', 'pending')
                     ->latest('id')
                     ->first();
+
+                if ($existing && $existing->created_at->addHours(24)->isPast()) {
+                    $existing->update(['status' => 'expired']);
+                    $existing = null;
+                }
 
                 if ($existing) {
                     return $existing;
@@ -67,7 +70,6 @@ class PaymentController extends Controller
             });
             optional($lock)->release();
         } catch (\Throwable $e) {
-            // Fallback: kunci baris DB (InnoDB)
             DB::transaction(function () use ($user, &$invoice) {
                 $pending = Invoice::where('user_id', $user->id)
                     ->where('type', 'formulir')
@@ -75,6 +77,11 @@ class PaymentController extends Controller
                     ->lockForUpdate()
                     ->latest('id')
                     ->first();
+
+                if ($pending && $pending->created_at->addHours(24)->isPast()) {
+                    $pending->update(['status' => 'expired']);
+                    $pending = null;
+                }
 
                 if ($pending) {
                     $invoice = $pending;
@@ -92,7 +99,6 @@ class PaymentController extends Controller
             });
         }
 
-        // Cek apakah invoice ini sudah lunas
         if ($invoice->status == 'paid') {
             return redirect()->route('dashboard')->with('info', 'Anda sudah membayar biaya formulir pendaftaran.');
         }
@@ -119,37 +125,13 @@ class PaymentController extends Controller
         ];
 
         try {
-            if (! empty($invoice->snap_token)) {
-                $snapToken = $invoice->snap_token;
+            if ($invoice->wasRecentlyCreated || empty($invoice->snap_token) || $invoice->status === 'expired') {
+                $invoice->snap_token = null;
+
+                $snapToken = Snap::getSnapToken($params);
+                $invoice->update(['snap_token' => $snapToken]);
             } else {
-                try {
-                    $lock = Cache::lock('snap-token:invoice:'.$invoice->id, 10);
-                    $snapToken = $lock->block(5, function () use ($invoice, $params) {
-                        $invoice->refresh();
-                        if (! empty($invoice->snap_token)) {
-                            return $invoice->snap_token;
-                        }
-                        $token = Snap::getSnapToken($params);
-                        $invoice->snap_token = $token;
-                        $invoice->save();
-
-                        return $token;
-                    });
-                    optional($lock)->release();
-                } catch (\Throwable $lockError) {
-                    DB::transaction(function () use ($invoice, $params, &$snapToken) {
-                        $locked = Invoice::where('id', $invoice->id)->lockForUpdate()->first();
-                        if (! empty($locked->snap_token)) {
-                            $snapToken = $locked->snap_token;
-
-                            return;
-                        }
-                        $token = Snap::getSnapToken($params);
-                        $locked->snap_token = $token;
-                        $locked->save();
-                        $snapToken = $token;
-                    });
-                }
+                $snapToken = $invoice->snap_token;
             }
 
             return view('payment.create', [
@@ -193,20 +175,16 @@ class PaymentController extends Controller
     public function notificationHandler(Request $request)
     {
         $notif = new Notification;
-
         $transaction = $notif->transaction_status;
         $type = $notif->payment_type;
         $orderId = $notif->order_id;
         $fraud = $notif->fraud_status;
-
-        // Cari invoice berdasarkan invoice_number yang dikirim sebagai order_id
         $invoice = Invoice::where('invoice_number', $orderId)->first();
 
         if (! $invoice) {
             return response()->json(['message' => 'Invoice not found.'], 404);
         }
 
-        // Jangan proses notifikasi untuk invoice yang sudah lunas
         if ($invoice->status === 'paid') {
             return response()->json(['message' => 'Invoice already paid.']);
         }
@@ -235,13 +213,11 @@ class PaymentController extends Controller
      */
     private function setInvoiceSuccess(Invoice $invoice, Notification $notif)
     {
-        // Update status invoice menjadi 'paid'
         $invoice->update([
             'status' => 'paid',
             'completed_at' => now(),
         ]);
 
-        // Buat atau perbarui record di tabel payments
         Payment::updateOrCreate(
             ['invoice_id' => $invoice->id],
             [
