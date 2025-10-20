@@ -20,7 +20,7 @@ Langkah selanjutnya adalah menyelesaikan proses administrasi keuangan. Berikut a
 
 Untuk informasi mengenai prosedur pembayaran dan langkah selanjutnya, silakan hubungi admin kami melalui tombol di bawah ini.
 
-<x-mail::button :url="''">
+<x-mail::button :url="'https://wa.me/6281904364257'">
 Hubungi Admin
 </x-mail::button>
 
