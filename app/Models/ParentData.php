@@ -2,27 +2,30 @@
 
 namespace App\Models;
 
+use App\Traits\LogsChanges;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ParentData extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsChanges;
 
-    /**
-     * Nama tabel yang terhubung dengan model ini.
-     *
-     * @var string
-     */
     protected $table = 'parents';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
-        'formulir_id', 'nama_lengkap', 'no_telp',
-        'alamat', 'hubungan_keluarga',
+        'formulir_id',
+        'nama_lengkap',
+        'no_telp',
+        'alamat',
+        'hubungan_keluarga',
     ];
+
+    /**
+     * Mendapatkan formulir yang memiliki data orang tua ini.
+     */
+    public function formulir(): BelongsTo
+    {
+        return $this->belongsTo(Formulir::class);
+    }
 }

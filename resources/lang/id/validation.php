@@ -27,6 +27,7 @@ return [
     'nullable' => 'Kolom :attribute boleh kosong.',
     'required' => 'Kolom :attribute wajib diisi.',
     'required_if' => 'Kolom :attribute wajib diisi bila :other adalah :value.',
+    'required_with' => 'Kolom :attribute wajib diisi bila :values ada.',
     'size' => [
         'numeric' => 'Kolom :attribute harus berukuran :size.',
         'file' => 'Kolom :attribute harus berukuran :size kilobita.',

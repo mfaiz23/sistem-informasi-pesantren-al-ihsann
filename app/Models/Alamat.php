@@ -2,27 +2,32 @@
 
 namespace App\Models;
 
+use App\Traits\LogsChanges;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Alamat extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsChanges;
 
-    /**
-     * Nama tabel yang terhubung dengan model ini.
-     *
-     * @var string
-     */
     protected $table = 'alamat';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
-        'formulir_id', 'negara', 'provinsi', 'kota_kabupaten',
-        'kecamatan', 'desa_kelurahan', 'alamat_lengkap',
+        'formulir_id',
+        'negara',
+        'provinsi',
+        'kota_kabupaten',
+        'kecamatan',
+        'desa_kelurahan',
+        'alamat_lengkap',
     ];
+
+    /**
+     * Mendapatkan formulir yang memiliki alamat ini.
+     */
+    public function formulir(): BelongsTo
+    {
+        return $this->belongsTo(Formulir::class);
+    }
 }
