@@ -68,10 +68,10 @@ class FormulirController extends Controller
      */
     public function show(string $id)
     {
-        $this->authorize('viewAny', Formulir::class);
-        $formulir = Formulir::with(['user', 'alamat', 'parent', 'kipDocument'])->findOrFail($id);
+        // $this->authorize('viewAny', Formulir::class);
+        // $formulir = Formulir::with(['user', 'alamat', 'parent', 'kipDocument'])->findOrFail($id);
 
-        return response()->json($formulir);
+        // return response()->json($formulir);
     }
 
     /**
@@ -126,7 +126,7 @@ class FormulirController extends Controller
     {
         $formulir = Formulir::findOrFail($id);
 
-        // Validasi: hanya bisa verifikasi jika status masih 'baru'
+        // Validasi: hanya bisa verifikasi jika status masih 'menunggu_verifikasi'
         if ($formulir->status_pendaftaran != 'menunggu_verifikasi') {
             return redirect()->back()->with('error', 'Formulir sudah diverifikasi sebelumnya.');
         }
