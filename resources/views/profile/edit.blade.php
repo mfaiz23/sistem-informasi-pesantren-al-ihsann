@@ -36,6 +36,7 @@
                             @include('formulir.partials.asal-sekolah', ['formulir' => $formulir])
                             @include('formulir.partials.alamat', ['alamat' => $formulir->alamat])
                             @include('formulir.partials.data-orang-tua', ['parent' => $formulir->parent])
+                            @include('formulir.partials.dokumen-pendukung', ['formulir' => $formulir])
 
                             <div class="flex justify-center mt-8">
                                 <x-primary-button

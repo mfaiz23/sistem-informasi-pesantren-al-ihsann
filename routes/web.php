@@ -79,6 +79,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/formulir/{id}', [AdminFormulirController::class, 'destroy'])
         ->name('formulir.destroy'); // ← Hanya 'formulir.destroy'
 
+    // Route untuk download dokumen pendukung
+    Route::get('admin/formulir/download-dokumen/{id}/{type}', [FormulirController::class, 'downloadDokumen'])
+        ->name('admin.formulir.download-dokumen');
+
     Route::post('/formulir/tolak/{id}', [AdminFormulirController::class, 'tolak'])
         ->name('formulir.tolak');
 

@@ -15,7 +15,10 @@ class Formulir extends Model
     protected $fillable = [
         'user_id', 'nama_panggilan', 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 'nik',
         'kategori_pendaftaran',
-        'no_kip',
+        'no_kip', 'status_pendaftaran',
+        'dokumen_ktp',
+        'dokumen_kk',
+        'dokumen_ijazah',
         'asal_sd', 'tahun_lulus_sd', 'asal_smp', 'tahun_lulus_smp',
         'asal_sma', 'tahun_lulus_sma', 'asal_universitas', 'jurusan', 'fakultas',
         'semester', 'angkatan', 'status_pendaftaran',

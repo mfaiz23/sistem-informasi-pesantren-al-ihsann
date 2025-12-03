@@ -47,7 +47,7 @@ class FormulirController extends Controller
                     $fraud = $resp->fraud_status ?? null;
 
                     if ($ts === 'settlement' || ($ts === 'capture' && $paymentType === 'credit_card' && $fraud === 'accept')) {
-                        \DB::transaction(function () use ($user, $pending, $resp, $paymentType) {
+                        DB::transaction(function () use ($user, $pending, $resp, $paymentType) {
                             \App\Models\Payment::updateOrCreate(
                                 ['invoice_id' => $pending->id],
                                 [
@@ -61,7 +61,6 @@ class FormulirController extends Controller
                             );
                             $pending->update(['status' => 'paid', 'completed_at' => now()]);
 
-                            // Tutup pending lain (sisa race)
                             \App\Models\Invoice::where('user_id', $user->id)
                                 ->where('type', 'formulir')
                                 ->where('status', 'pending')
@@ -108,9 +107,23 @@ class FormulirController extends Controller
             $kipDocumentPath = $request->file('dokumen_kip')->store('dokumen-kip', 'public');
         }
 
-        DB::transaction(function () use ($validatedData, $kipDocumentPath) { // Tambahkan $request
-            $formulirData = collect($validatedData)->except(['dokumen_kip', 'no_kip'])->toArray(); // Jangan simpan no_kip di tabel formulir
-            $formulir = Formulir::create(array_merge($formulirData, ['user_id' => Auth::id()]));
+        $dokumenUmumPaths = [];
+        $dokumenFields = ['dokumen_ktp', 'dokumen_kk', 'dokumen_ijazah'];
+
+        foreach ($dokumenFields as $field) {
+            if ($request->hasFile($field)) {
+                $dokumenUmumPaths[$field] = $request->file($field)->store('dokumen-umum', 'public');
+            }
+        }
+
+        DB::transaction(function () use ($validatedData, $kipDocumentPath, $dokumenUmumPaths) {
+            $formulirData = collect($validatedData)
+                ->except(['dokumen_kip', 'no_kip', 'dokumen_ktp', 'dokumen_kk', 'dokumen_ijazah'])
+                ->toArray();
+
+            $createData = array_merge($formulirData, $dokumenUmumPaths, ['user_id' => Auth::id()]);
+
+            $formulir = Formulir::create($createData);
 
             $formulir->alamat()->create($validatedData);
             $formulir->parent()->create($validatedData);
@@ -173,14 +186,27 @@ class FormulirController extends Controller
                 ]
             );
         } elseif ($request->kategori_pendaftaran === 'Non-Reguler') {
-            // Jika tidak ada file baru diupload, tapi no_kip mungkin berubah
             if ($formulir->kipDocument) {
                 $formulir->kipDocument->update(['no_kip' => $validatedData['no_kip']]);
             }
         }
 
-        DB::transaction(function () use ($formulir, $validatedData) {
-            $formulirData = collect($validatedData)->except(['dokumen_kip', 'no_kip'])->toArray(); // Jangan update no_kip di tabel formulir
+        DB::transaction(function () use ($formulir, $validatedData, $request) {
+            $formulirData = collect($validatedData)
+                ->except(['dokumen_kip', 'no_kip', 'dokumen_ktp', 'dokumen_kk', 'dokumen_ijazah'])
+                ->toArray();
+
+            $dokumenFields = ['dokumen_ktp', 'dokumen_kk', 'dokumen_ijazah'];
+
+            foreach ($dokumenFields as $field) {
+                if ($request->hasFile($field)) {
+                    // Hapus file lama jika ada
+                    if ($formulir->$field) {
+                        Storage::disk('public')->delete($formulir->$field);
+                    }
+                    $formulirData[$field] = $request->file($field)->store('dokumen-umum', 'public');
+                }
+            }
 
             if ($formulir->status_pendaftaran === 'ditolak') {
                 $formulirData['status_pendaftaran'] = 'menunggu_verifikasi';
@@ -223,7 +249,7 @@ class FormulirController extends Controller
                 'nullable',
                 'numeric',
                 'digits:14',
-                Rule::unique('kip_documents', 'no_kip')->ignore(optional($request->user()->formulir?->kipDocument)->id), // <-- DITAMBAHKAN
+                Rule::unique('kip_documents', 'no_kip')->ignore(optional($request->user()->formulir?->kipDocument)->id),
             ],
             'asal_sd' => 'nullable|string|max:255',
             'tahun_lulus_sd' => 'nullable|date_format:Y|after_or_equal:1950|before_or_equal:'.date('Y'),
@@ -246,23 +272,54 @@ class FormulirController extends Controller
             'no_telp' => 'required|string|max:15',
             'alamat' => 'required|string',
             'hubungan_keluarga' => 'required|string|max:255',
+
+            'dokumen_ktp' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'dokumen_kk' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'dokumen_ijazah' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ];
-
-        if ($request->kategori_pendaftaran === 'Non-Reguler') {
-            // <<< PERBAIKAN 2: Arahkan validasi unique ke tabel 'kip_documents'
-            $uniqueRule = Rule::unique('kip_documents', 'no_kip');
-
-            if ($isUpdate && $request->user()->formulir?->kipDocument) {
-                // Abaikan ID dokumen KIP yang sudah ada saat update
-                $uniqueRule->ignore($request->user()->formulir->kipDocument->id);
-            }
-            $rules['no_kip'][] = $uniqueRule;
-        }
 
         $rules['dokumen_kip'] = $isUpdate
             ? 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120'
             : 'required_if:kategori_pendaftaran,Non-Reguler|nullable|file|mimes:pdf,jpg,jpeg,png|max:5120';
 
         return $request->validate($rules);
+    }
+
+    /**
+     * Download dokumen pendukung (KTP, KK, Ijazah).
+     */
+    public function downloadDokumen($id, $type)
+    {
+        try {
+            $formulir = Formulir::findOrFail($id);
+            $filePath = null;
+
+            // Tentukan file mana yang mau diambil
+            switch ($type) {
+                case 'ktp':
+                    $filePath = $formulir->dokumen_ktp;
+                    break;
+                case 'kk':
+                    $filePath = $formulir->dokumen_kk;
+                    break;
+                case 'ijazah':
+                    $filePath = $formulir->dokumen_ijazah;
+                    break;
+                default:
+                    return redirect()->back()->with('error', 'Jenis dokumen tidak valid.');
+            }
+
+            // Cek fisik file di storage
+            if ($filePath && Storage::disk('public')->exists($filePath)) {
+                $absolutePath = Storage::disk('public')->path($filePath);
+
+                return response()->download($absolutePath);
+            }
+
+            return redirect()->back()->with('error', 'File dokumen tidak ditemukan di server.');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat mengunduh dokumen.');
+        }
     }
 }

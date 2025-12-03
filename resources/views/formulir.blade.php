@@ -33,6 +33,7 @@
                         @include('formulir.partials.asal-sekolah')
                         @include('formulir.partials.alamat')
                         @include('formulir.partials.data-orang-tua')
+                        @include('formulir.partials.dokumen-pendukung')
 
                         <div class="flex justify-center mt-8">
                             <x-primary-button class="bg-[#028579] hover:bg-[#016a60]">
