@@ -12,7 +12,6 @@ return new class extends Migration
     public function up()
     {
         Schema::table('formulirs', function (Blueprint $table) {
-            // Menambah kolom untuk path dokumen (nullable karena mungkin diisi bertahap)
             $table->string('dokumen_ktp')->nullable()->after('status_pendaftaran');
             $table->string('dokumen_kk')->nullable()->after('dokumen_ktp');
             $table->string('dokumen_ijazah')->nullable()->after('dokumen_kk');

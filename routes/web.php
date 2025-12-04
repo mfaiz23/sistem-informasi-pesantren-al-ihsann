@@ -69,9 +69,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // PERBAIKAN: Ganti rute ini agar memanggil FormulirController
     Route::get('/pendaftaran-santri', [AdminFormulirController::class, 'index'])->name('pendaftaran');
-    // PERBAIKAN: Hapus prefix 'admin.' dari name() karena sudah ada di grup
+
+    Route::post('/formulir/dokumen/update', [AdminFormulirController::class, 'updateDocumentStatus'])
+        ->name('formulir.dokumen.update');
+
+    Route::post('/formulir/{id}/verifikasi-semua-dokumen', [AdminFormulirController::class, 'verifyAllDocuments'])
+        ->name('formulir.dokumen.verify_all');
+
     Route::post('/formulir/verifikasi/{id}', [AdminFormulirController::class, 'verifikasi'])
-        ->name('formulir.verifikasi'); // ← Hanya 'formulir.verifikasi'
+        ->name('formulir.verifikasi');
 
     Route::get('/formulir/download-kip/{id}', [AdminFormulirController::class, 'downloadKipDocument'])->name('formulir.download_kip');
 

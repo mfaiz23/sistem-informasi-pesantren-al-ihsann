@@ -14,6 +14,8 @@
                     <p>{{ session('error') }}</p>
                 </div>
             @endif
+
+            {{-- Alert jika Formulir Utama Ditolak --}}
             @if ($formulir && $formulir->status_pendaftaran == 'ditolak')
                 <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-md shadow-sm" role="alert">
                     <p class="font-bold">Perhatian!</p>
@@ -28,8 +30,8 @@
                     <div class="md:col-span-2 p-6 md:p-8">
                         <h3 class="text-lg font-semibold text-gray-800 mb-1">Formulir Pendaftaran</h3>
                         <div class="border-t border-gray-200 mt-4 pt-4">
-                            
-                            {{-- KONDISI SETELAH MENGISI FORMULIR (Menunggu, Diverifikasi, Ditolak) --}}
+
+                            {{-- KONDISI 1: SETELAH MENGISI FORMULIR --}}
                             @if ($payment && $payment->status == 'success' && $formulir)
                                 <div class="text-center py-8">
                                     <div class="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
@@ -38,14 +40,14 @@
                                         </svg>
                                     </div>
                                     <h4 class="text-xl font-semibold text-gray-700">Kamu sudah mengisi formulir pendaftaran</h4>
-                                    <p class="text-gray-500 mt-2">Klik tombol di bawah ini untuk mengubah data formulir pendaftaran.</p>
+                                    <p class="text-gray-500 mt-2">Klik tombol di bawah ini untuk melihat atau mengubah data formulir.</p>
                                     <div class="mt-6">
                                         <a href="{{ route('profile.edit') }}" class="inline-block bg-[#028579] text-white font-semibold py-3 px-8 rounded-lg hover:bg-[#016a60] transition duration-300">
                                             Profil Akun
                                         </a>
                                     </div>
                                 </div>
-                            
+
                             {{-- KONDISI 2: SUDAH LUNAS TAPI BELUM ISI FORMULIR --}}
                             @elseif ($payment && $payment->status == 'success')
                                 <div class="text-center py-8">
@@ -85,9 +87,9 @@
                         </div>
                     </div>
 
-                    {{-- Kolom Kanan: Keterangan Status (Telah Disesuaikan) --}}
+                    {{-- Kolom Kanan: Keterangan Status & Dokumen --}}
                     <div class="md:col-span-1 border-t md:border-t-0 md:border-l border-gray-200 p-6 md:p-8">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-1">Keterangan</h3>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-1">Keterangan Pendaftaran</h3>
                         <div class="border-t border-gray-200 mt-4 pt-4">
                             <ul class="space-y-4 text-sm">
                                 {{-- Status Verifikasi (Statis) --}}
@@ -108,7 +110,7 @@
                                     @endif
                                 </li>
                                 <li class="flex justify-between items-center">
-                                    <span class="text-gray-600">Dokumen ditolak</span>
+                                    <span class="text-gray-600">Formulir ditolak</span>
                                     @if ($formulir && $formulir->status_pendaftaran == 'ditolak')
                                         <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                     @else
@@ -116,11 +118,80 @@
                                     @endif
                                 </li>
 
-                                {{-- Status Pembayaran Formulir (Tetap Dropdown) --}}
+                                {{-- === NEW: STATUS DOKUMEN (DROPDOWN) === --}}
+                                @if($formulir)
                                 <li x-data="{ open: false }" class="pt-3 border-t border-gray-100">
-                                    <button @click="open = !open" class="w-full flex justify-between items-center text-left text-gray-700 font-semibold">
+                                    <button @click="open = !open" class="w-full flex justify-between items-center text-left text-gray-700 font-semibold focus:outline-none">
+                                        <span>Status Dokumen</span>
+                                        <svg class="w-4 h-4 transform transition-transform duration-200" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </button>
+
+                                    <div x-show="open" x-collapse class="pt-3 mt-2 space-y-3">
+                                        {{-- Loop KTP, KK, Ijazah --}}
+                                        @foreach([
+                                            ['label' => 'KTP', 'status' => $formulir->status_dokumen_ktp, 'reason' => $formulir->alasan_tolak_ktp],
+                                            ['label' => 'KK', 'status' => $formulir->status_dokumen_kk, 'reason' => $formulir->alasan_tolak_kk],
+                                            ['label' => 'Ijazah', 'status' => $formulir->status_dokumen_ijazah, 'reason' => $formulir->alasan_tolak_ijazah],
+                                        ] as $doc)
+                                        <div class="bg-gray-50 p-2 rounded border border-gray-100">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-gray-600 font-medium">{{ $doc['label'] }}</span>
+                                                @if($doc['status'] == 'valid')
+                                                    <span class="text-[10px] font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded">VALID</span>
+                                                @elseif($doc['status'] == 'invalid')
+                                                    <span class="text-[10px] font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded">DITOLAK</span>
+                                                @else
+                                                    <span class="text-[10px] font-bold text-yellow-600 bg-yellow-100 px-2 py-0.5 rounded">PENDING</span>
+                                                @endif
+                                            </div>
+                                            {{-- Alasan Penolakan --}}
+                                            @if($doc['status'] == 'invalid' && $doc['reason'])
+                                                <div class="mt-2 text-xs text-red-600 border-t border-red-100 pt-1">
+                                                    <span class="font-bold">Alasan:</span> {{ $doc['reason'] }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                        @endforeach
+
+                                        {{-- KIP (Khusus Non-Reguler) --}}
+                                        @if($formulir->kategori_pendaftaran == 'Non-Reguler' && $formulir->kipDocument)
+                                            @php
+                                                $kipStatus = $formulir->kipDocument->status_verifikasi;
+                                                $kipBadge = $kipStatus == 'valid' ? 'VALID' : ($kipStatus == 'tidak_valid' ? 'DITOLAK' : 'PENDING');
+                                                $kipColor = $kipStatus == 'valid' ? 'green' : ($kipStatus == 'tidak_valid' ? 'red' : 'yellow');
+                                                $kipReason = $formulir->kipDocument->alasan_penolakan;
+                                            @endphp
+                                            <div class="bg-gray-50 p-2 rounded border border-gray-100">
+                                                <div class="flex justify-between items-center">
+                                                    <span class="text-gray-600 font-medium">KIP</span>
+                                                    <span class="text-[10px] font-bold text-{{ $kipColor }}-600 bg-{{ $kipColor }}-100 px-2 py-0.5 rounded">{{ $kipBadge }}</span>
+                                                </div>
+                                                @if($kipStatus == 'tidak_valid' && $kipReason)
+                                                    <div class="mt-2 text-xs text-red-600 border-t border-red-100 pt-1">
+                                                        <span class="font-bold">Alasan:</span> {{ $kipReason }}
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @endif
+
+                                        {{-- Tombol Perbaiki (Muncul jika ada dokumen yang Invalid) --}}
+                                        @if(in_array('invalid', [$formulir->status_dokumen_ktp, $formulir->status_dokumen_kk, $formulir->status_dokumen_ijazah]) ||
+                                           ($formulir->kipDocument && $formulir->kipDocument->status_verifikasi == 'tidak_valid'))
+                                            <div class="pt-2">
+                                                <a href="{{ route('profile.edit') }}" class="block w-full text-center bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2 px-4 rounded transition">
+                                                    Perbaiki Dokumen
+                                                </a>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </li>
+                                @endif
+
+                                {{-- Status Pembayaran Formulir --}}
+                                <li x-data="{ open: false }" class="pt-3 border-t border-gray-100">
+                                    <button @click="open = !open" class="w-full flex justify-between items-center text-left text-gray-700 font-semibold focus:outline-none">
                                         <span>Status Pembayaran Formulir</span>
-                                        <svg class="w-4 h-4 transform transition-transform" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        <svg class="w-4 h-4 transform transition-transform duration-200" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                     </button>
                                     <div x-show="open" x-collapse class="pt-3 mt-3 border-t border-gray-200">
                                         @if ($invoice)
@@ -142,8 +213,8 @@
                                                 <div class="flex justify-between items-center">
                                                     <dt class="text-gray-500">Status:</dt>
                                                     <dd>
-                                                        <span class="px-2 py-1 font-semibold leading-tight rounded-full 
-                                                            @if($invoice->status == 'paid') text-green-700 bg-green-100 
+                                                        <span class="px-2 py-1 font-semibold leading-tight rounded-full
+                                                            @if($invoice->status == 'paid') text-green-700 bg-green-100
                                                             @elseif($invoice->status == 'pending') text-yellow-700 bg-yellow-100
                                                             @else text-red-700 bg-red-100 @endif">
                                                             {{ $invoice->status == 'paid' ? 'Lunas' : ucfirst($invoice->status) }}
