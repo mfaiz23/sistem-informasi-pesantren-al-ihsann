@@ -208,7 +208,7 @@ class FormulirController extends Controller
                 }
             }
 
-            if ($formulir->status_pendaftaran === 'ditolak') {
+            if (in_array($formulir->status_pendaftaran, ['ditolak', 'diverifikasi'])) {
                 $formulirData['status_pendaftaran'] = 'menunggu_verifikasi';
                 $formulirData['alasan_penolakan'] = null;
             }
