@@ -12,6 +12,7 @@ class KipDocument extends Model
     protected $fillable = [
         'formulir_id',
         'dokumen_path',
+        'no_kip',
         'status_verifikasi',
     ];
 }

@@ -3,10 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\DokumenRejected;
+use App\Mail\DokumenVerified;
+use App\Mail\FormulirRejected;
 use App\Mail\FormulirVerified;
 use App\Models\Formulir;
 use App\Models\KipDocument;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
@@ -66,9 +70,10 @@ class FormulirController extends Controller
      */
     public function show(string $id)
     {
-        $formulir = Formulir::with(['user', 'alamat', 'parent', 'kipDocument'])->findOrFail($id);
+        // $this->authorize('viewAny', Formulir::class);
+        // $formulir = Formulir::with(['user', 'alamat', 'parent', 'kipDocument'])->findOrFail($id);
 
-        return response()->json($formulir);
+        // return response()->json($formulir);
     }
 
     /**
@@ -121,29 +126,91 @@ class FormulirController extends Controller
      */
     public function verifikasi($id)
     {
-        $formulir = Formulir::findOrFail($id);
+        $formulir = Formulir::with('kipDocument')->findOrFail($id);
 
-        // Validasi: hanya bisa verifikasi jika status masih 'baru'
-        if ($formulir->status_pendaftaran != 'baru') {
-            return redirect()->back()->with('error', 'Formulir sudah diverifikasi sebelumnya.');
+        // Cek Status Semua Dokumen
+        $dokumenCheck = [
+            'KTP' => $formulir->status_dokumen_ktp,
+            'KK' => $formulir->status_dokumen_kk,
+            'Ijazah' => $formulir->status_dokumen_ijazah,
+        ];
+
+        // Tambah cek KIP jika Non-Reguler
+        if ($formulir->kategori_pendaftaran === 'Non-Reguler' && $formulir->kipDocument) {
+            $statusKip = $formulir->kipDocument->status_verifikasi;
+            // Normalisasi status kip agar seragam
+            $dokumenCheck['KIP'] = ($statusKip == 'tidak_valid') ? 'invalid' : ($statusKip ?? 'pending');
         }
 
-        // ubah status jadi diverifikasi
+        // Cari dokumen yang bermasalah
+        $pending = array_keys(array_filter($dokumenCheck, fn ($s) => $s === 'pending'));
+        $invalid = array_keys(array_filter($dokumenCheck, fn ($s) => $s === 'invalid'));
+
+        // LOGIKA PERINGATAN / BLOKIR
+        if (! empty($pending)) {
+            return redirect()->back()->with('error', 'Gagal Verifikasi: Dokumen berikut BELUM diperiksa: '.implode(', ', $pending).'. Harap periksa dokumen terlebih dahulu.');
+        }
+
+        if (! empty($invalid)) {
+            return redirect()->back()->with('error', 'Gagal Verifikasi: Ada dokumen yang statusnya DITOLAK ('.implode(', ', $invalid).'). Mohon perbaiki status dokumen atau tolak formulir pendaftaran.');
+        }
+
+        // Jika semua aman, lanjut verifikasi
+        if ($formulir->status_pendaftaran != 'menunggu_verifikasi') {
+            return redirect()->back()->with('error', 'Formulir sudah diproses sebelumnya.');
+        }
+
         $formulir->status_pendaftaran = 'diverifikasi';
         $formulir->save();
-
-        if ($formulir->kipDocument) {
-            // Jika ada, ubah status verifikasi dokumen KIP
-            $kipDocument = $formulir->kipDocument;
-            $kipDocument->status_verifikasi = 'valid';
-            $kipDocument->save();
-        }
 
         if ($formulir->user && $formulir->user->email) {
             Mail::to($formulir->user->email)->send(new FormulirVerified($formulir));
         }
 
         return redirect()->back()->with('success', 'Formulir berhasil diverifikasi.');
+    }
+
+    /**
+     * Menolak formulir pendaftaran.
+     */
+    public function tolak(Request $request, $id)
+    {
+        // Validasi input dari modal
+        $request->validate([
+            'alasan_penolakan' => 'required|string|min:10|max:1000',
+        ]);
+
+        $formulir = Formulir::with('user', 'kipDocument')->findOrFail($id); // Eager load kipDocument
+
+        // 1. Pemeriksaan Status yang Konsisten
+        if ($formulir->status_pendaftaran !== 'menunggu_verifikasi') {
+            return redirect()->back()->with('error', 'Formulir ini tidak dalam status "menunggu verifikasi" dan tidak dapat diproses.');
+        }
+
+        // 2. Ubah Status dan Simpan Alasan
+        $formulir->status_pendaftaran = 'ditolak';
+        $formulir->alasan_penolakan = $request->input('alasan_penolakan');
+        $formulir->save();
+
+        // Jika ada dokumen KIP, ubah juga status verifikasinya menjadi "tidak valid".
+        if ($formulir->kipDocument) {
+            $formulir->kipDocument->update(['status_verifikasi' => 'tidak_valid']);
+        }
+
+        // 3. Kirim Email Notifikasi dengan Penanganan Error yang Lebih Baik
+        try {
+            if ($formulir->user && $formulir->user->email) {
+                Mail::to($formulir->user->email)->send(new FormulirRejected($formulir));
+            }
+        } catch (\Exception $e) {
+            // Catat error ke log untuk developer
+            Log::error('Gagal mengirim email penolakan untuk formulir ID '.$formulir->id.': '.$e->getMessage());
+
+            // Berikan pesan error yang jelas kepada admin
+            return redirect()->back()->with('error', 'Formulir ditolak, tetapi notifikasi email gagal dikirim. Silakan cek konfigurasi email Anda. Error: '.$e->getMessage());
+        }
+
+        return redirect()->back()->with('success', 'Formulir berhasil ditolak dan notifikasi telah dikirim ke pendaftar.');
     }
 
     /**
@@ -179,5 +246,126 @@ class FormulirController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Terjadi kesalahan saat mengunduh dokumen.');
         }
+    }
+
+    public function updateDocumentStatus(Request $request)
+    {
+        // 1. Validasi Input
+        $request->validate([
+            'formulir_id' => 'required|exists:formulirs,id',
+            'jenis_dokumen' => 'required|in:ktp,kk,ijazah,kip',
+            'status' => 'required|in:valid,invalid',
+            'alasan' => 'nullable|string',
+        ]);
+
+        // 2. Ambil Data Formulir & User
+        $formulir = Formulir::with('user', 'kipDocument')->findOrFail($request->formulir_id);
+        $jenis = $request->jenis_dokumen;
+        $status = $request->status;
+        $alasan = $request->alasan;
+
+        // 3. Buat Label Dokumen yang Rapi untuk Email
+        // (Agar di email tertulis "Kartu Keluarga", bukan "kk")
+        $labelDokumen = match ($jenis) {
+            'ktp' => 'KTP',
+            'kk' => 'Kartu Keluarga',
+            'ijazah' => 'Ijazah Terakhir',
+            'kip' => 'Kartu Indonesia Pintar',
+            default => strtoupper($jenis),
+        };
+
+        // 4. Update Database (Logika Simpan)
+        if ($jenis === 'kip') {
+            if (! $formulir->kipDocument) {
+                return redirect()->back()->with('error', 'Dokumen KIP tidak ditemukan.');
+            }
+            $formulir->kipDocument->update([
+                'status_verifikasi' => $status == 'valid' ? 'valid' : 'tidak_valid',
+                'alasan_penolakan' => $status == 'invalid' ? $alasan : null,
+            ]);
+        } else {
+            $colStatus = "status_dokumen_{$jenis}";
+            $colAlasan = "alasan_tolak_{$jenis}";
+
+            $formulir->$colStatus = $status;
+            $formulir->$colAlasan = $status == 'invalid' ? $alasan : null;
+            $formulir->save();
+        }
+
+        // 5. KIRIM EMAIL (Logic Baru)
+        if ($formulir->user && $formulir->user->email) {
+            try {
+                if ($status == 'valid') {
+                    // Kirim Email Valid
+                    Mail::to($formulir->user->email)
+                        ->send(new DokumenVerified($formulir->user, $labelDokumen));
+                } else {
+                    // Kirim Email Ditolak (Sertakan alasan)
+                    Mail::to($formulir->user->email)
+                        ->send(new DokumenRejected($formulir->user, $labelDokumen, $alasan));
+                }
+            } catch (\Exception $e) {
+                // Log error jika email gagal, tapi jangan hentikan proses controller
+                Log::error('Gagal kirim email dokumen: '.$e->getMessage());
+            }
+        }
+
+        return redirect()->back()->with('success', "Status dokumen $labelDokumen berhasil diperbarui.");
+    }
+
+    public function verifyAllDocuments(Request $request, $id)
+    {
+        // Gunakan Eager Loading untuk efisiensi
+        $formulir = Formulir::with(['user', 'kipDocument'])->findOrFail($id);
+        $user = $formulir->user;
+
+        // Daftar dokumen yang akan divalidasi
+        $documentsToUpdate = [
+            'ktp' => 'KTP',
+            'kk' => 'Kartu Keluarga',
+            'ijazah' => 'Ijazah Terakhir',
+        ];
+
+        // 1. Update Dokumen Utama
+        $formulir->status_dokumen_ktp = 'valid';
+        $formulir->alasan_tolak_ktp = null;
+
+        $formulir->status_dokumen_kk = 'valid';
+        $formulir->alasan_tolak_kk = null;
+
+        $formulir->status_dokumen_ijazah = 'valid';
+        $formulir->alasan_tolak_ijazah = null;
+
+        $formulir->save(); // Simpan perubahan formulir utama
+
+        // Kirim email notifikasi untuk dokumen utama
+        if ($user && $user->email) {
+            foreach ($documentsToUpdate as $key => $label) {
+                try {
+                    Mail::to($user->email)->send(new DokumenVerified($user, $label));
+                } catch (\Exception $e) {
+                    Log::error("Gagal kirim email bulk verify ($label): ".$e->getMessage());
+                }
+            }
+        }
+
+        // 2. Update KIP (Jika Ada)
+        if ($formulir->kipDocument) {
+            $formulir->kipDocument->update([
+                'status_verifikasi' => 'valid',
+                'alasan_penolakan' => null,
+            ]);
+
+            // Kirim email notifikasi KIP
+            if ($user && $user->email) {
+                try {
+                    Mail::to($user->email)->send(new DokumenVerified($user, 'Kartu Indonesia Pintar'));
+                } catch (\Exception $e) {
+                    Log::error('Gagal kirim email bulk verify (KIP): '.$e->getMessage());
+                }
+            }
+        }
+
+        return redirect()->back()->with('success', 'Semua dokumen berhasil ditandai sebagai VALID dan notifikasi telah dikirim.');
     }
 }

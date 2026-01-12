@@ -21,6 +21,7 @@
                     @include('formulir.partials.asal-sekolah', ['formulir' => $formulir, 'disabled' => true])
                     @include('formulir.partials.alamat', ['alamat' => $formulir->alamat, 'disabled' => true])
                     @include('formulir.partials.data-orang-tua', ['parent' => $formulir->parent, 'disabled' => true])
+                    @include('formulir.partials.dokumen-pendukung', ['formulir' => $formulir, 'disabled' => true])
                 </div>
             </div>
         </div>

@@ -7,23 +7,23 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ config('app.name', 'Laravel') }}</title>
+    <link rel="icon" type="image/png" href="{{ asset('assets/images/al-ihsan.jpg') }}">
 
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    {{-- Ganti Font ke Poppins --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
 
+    {{-- Scripts Vite --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
 <body class="font-sans text-gray-900 antialiased">
-    {{-- Menggunakan flexbox untuk membuat "sticky footer" --}}
     <div class="min-h-screen flex flex-col items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-gray-900">
-
-        {{-- Konten utama akan tumbuh mengisi ruang yang tersedia --}}
         <div class="flex-grow flex flex-col sm:justify-center items-center w-full">
             {{ $slot }}
         </div>
-
-        {{-- Footer akan selalu berada di bagian bawah --}}
         <x-app-footer />
     </div>
 </body>

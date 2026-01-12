@@ -33,11 +33,10 @@
                         @include('formulir.partials.asal-sekolah')
                         @include('formulir.partials.alamat')
                         @include('formulir.partials.data-orang-tua')
+                        @include('formulir.partials.dokumen-pendukung')
 
                         <div class="flex justify-center mt-8">
-                            <x-primary-button style="background-color: #5CC56C;"
-                                onmouseover="this.style.backgroundColor='#4AAE5A'"
-                                onmouseout="this.style.backgroundColor='#5CC56C'">
+                            <x-primary-button class="bg-[#028579] hover:bg-[#016a60]">
                                 {{ __('SIMPAN DATA') }}
                             </x-primary-button>
                         </div>

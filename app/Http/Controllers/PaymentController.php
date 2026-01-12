@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Invoice;
 use App\Models\Payment;
-use App\Notifications\PaymentSuccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Midtrans\Config;
 use Midtrans\Notification;
 use Midtrans\Snap;
@@ -26,27 +26,81 @@ class PaymentController extends Controller
     {
         $user = Auth::user();
 
-        // Cari atau buat Invoice terlebih dahulu
-        $invoice = Invoice::firstOrCreate(
-            [
-                'user_id' => $user->id,
-                'type' => 'formulir',
-            ],
-            [
-                'invoice_number' => 'INV-FORM-'.$user->id.'-'.time(),
-                'amount' => 300000,
-                'status' => 'pending',
-            ]
-        );
+        $alreadyPaid = $user->invoices()
+            ->where('type', 'formulir')
+            ->where('status', 'paid')
+            ->exists();
 
-        // Cek apakah invoice ini sudah lunas
-        if ($invoice->status == 'paid') {
-            return redirect()->route('dashboard')->with('info', 'Anda sudah membayar biaya formulir pendaftaran.');
+        if ($alreadyPaid) {
+            return redirect()->route('dashboard')
+                ->with('info', 'Anda sudah membayar biaya formulir. Silakan lanjut ke pengisian formulir.');
         }
 
-        if (! $invoice->wasRecentlyCreated && $invoice->status == 'pending') {
-            $invoice->invoice_number = 'INV-FORM-'.$user->id.'-'.time();
-            $invoice->save();
+        $invoice = null;
+
+        try {
+            $lock = Cache::lock('invoice:formulir:user:'.$user->id, 10);
+            $invoice = $lock->block(5, function () use ($user) {
+                $existing = Invoice::where('user_id', $user->id)
+                    ->where('type', 'formulir')
+                    ->where('status', 'pending')
+                    ->latest('id')
+                    ->first();
+
+                if ($existing && $existing->created_at->addHours(24)->isPast()) {
+                    $existing->update(['status' => 'expired']);
+                    $existing = null;
+                }
+
+                if ($existing) {
+                    return $existing;
+                }
+
+                if (Invoice::where('user_id', $user->id)->where('type', 'formulir')->where('status', 'paid')->exists()) {
+                    throw new \RuntimeException('FORMULIR_ALREADY_PAID');
+                }
+
+                return Invoice::create([
+                    'user_id' => $user->id,
+                    'type' => 'formulir',
+                    'invoice_number' => 'INV-FORM-'.$user->id.'-'.time(),
+                    'amount' => 300000,
+                    'status' => 'pending',
+                ]);
+            });
+            optional($lock)->release();
+        } catch (\Throwable $e) {
+            DB::transaction(function () use ($user, &$invoice) {
+                $pending = Invoice::where('user_id', $user->id)
+                    ->where('type', 'formulir')
+                    ->where('status', 'pending')
+                    ->lockForUpdate()
+                    ->latest('id')
+                    ->first();
+
+                if ($pending && $pending->created_at->addHours(24)->isPast()) {
+                    $pending->update(['status' => 'expired']);
+                    $pending = null;
+                }
+
+                if ($pending) {
+                    $invoice = $pending;
+
+                    return;
+                }
+
+                $invoice = Invoice::create([
+                    'user_id' => $user->id,
+                    'type' => 'formulir',
+                    'invoice_number' => 'INV-FORM-'.$user->id.'-'.time(),
+                    'amount' => 300000,
+                    'status' => 'pending',
+                ]);
+            });
+        }
+
+        if ($invoice->status == 'paid') {
+            return redirect()->route('dashboard')->with('info', 'Anda sudah membayar biaya formulir pendaftaran.');
         }
 
         // Siapkan parameter untuk Midtrans
@@ -71,7 +125,14 @@ class PaymentController extends Controller
         ];
 
         try {
-            $snapToken = Snap::getSnapToken($params);
+            if ($invoice->wasRecentlyCreated || empty($invoice->snap_token) || $invoice->status === 'expired') {
+                $invoice->snap_token = null;
+
+                $snapToken = Snap::getSnapToken($params);
+                $invoice->update(['snap_token' => $snapToken]);
+            } else {
+                $snapToken = $invoice->snap_token;
+            }
 
             return view('payment.create', [
                 'snapToken' => $snapToken,
@@ -80,8 +141,32 @@ class PaymentController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            if (str_contains($e->getMessage(), 'order_id has already been taken') ||
+                str_contains($e->getMessage(), 'order_id sudah digunakan')) {
+
+                try {
+                    $resp = \Midtrans\Transaction::status($invoice->invoice_number);
+                    $ts = $resp->transaction_status ?? null;
+
+                    if ($ts === 'pending' && ! empty($invoice->snap_token)) {
+                        return view('payment.create', [
+                            'snapToken' => $invoice->snap_token,
+                            'payment' => null,
+                            'invoice' => $invoice,
+                        ]);
+                    }
+
+                    if ($ts === 'settlement' ||
+                    ($ts === 'capture' && ($resp->payment_type ?? null) === 'credit_card' && ($resp->fraud_status ?? null) === 'accept')) {
+                        return redirect()->route('dashboard')->with('info', 'Pembayaran sudah terselesaikan.');
+                    }
+                } catch (\Throwable $ignored) {
+                }
+            }
+
             return redirect()->route('dashboard')->with('error', 'Terjadi kesalahan saat membuat transaksi: '.$e->getMessage());
         }
+
     }
 
     /**
@@ -90,20 +175,16 @@ class PaymentController extends Controller
     public function notificationHandler(Request $request)
     {
         $notif = new Notification;
-
         $transaction = $notif->transaction_status;
         $type = $notif->payment_type;
         $orderId = $notif->order_id;
         $fraud = $notif->fraud_status;
-
-        // Cari invoice berdasarkan invoice_number yang dikirim sebagai order_id
         $invoice = Invoice::where('invoice_number', $orderId)->first();
 
         if (! $invoice) {
             return response()->json(['message' => 'Invoice not found.'], 404);
         }
 
-        // Jangan proses notifikasi untuk invoice yang sudah lunas
         if ($invoice->status === 'paid') {
             return response()->json(['message' => 'Invoice already paid.']);
         }
@@ -132,13 +213,11 @@ class PaymentController extends Controller
      */
     private function setInvoiceSuccess(Invoice $invoice, Notification $notif)
     {
-        // Update status invoice menjadi 'paid'
         $invoice->update([
             'status' => 'paid',
             'completed_at' => now(),
         ]);
 
-        // Buat atau perbarui record di tabel payments
         Payment::updateOrCreate(
             ['invoice_id' => $invoice->id],
             [
@@ -150,12 +229,5 @@ class PaymentController extends Controller
                 'raw_response' => json_encode($notif->getResponse()),
             ]
         );
-        try {
-            $user = $invoice->user;
-            $user->notify(new PaymentSuccess($invoice));
-        } catch (\Exception $e) {
-            // Jika email gagal dikirim, catat error tapi jangan hentikan proses
-            Log::error('Gagal mengirim notifikasi pembayaran untuk invoice '.$invoice->invoice_number.': '.$e->getMessage());
-        }
     }
 }

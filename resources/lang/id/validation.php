@@ -9,6 +9,8 @@ return [
     */
 
     'accepted' => 'Kolom :attribute harus diterima.',
+    'after_or_equal' => 'Kolom :attribute harus berupa tanggal setelah atau sama dengan :date.',
+    'before_or_equal' => 'Kolom :attribute harus berupa tanggal sebelum atau sama dengan :date.',
     'current_password' => 'Kata sandi yang diberikan tidak cocok dengan kata sandi Anda saat ini.',
     'date' => 'Kolom :attribute bukan tanggal yang valid.',
     'date_format' => 'Kolom :attribute tidak cocok dengan format :format.',
@@ -25,6 +27,7 @@ return [
     'nullable' => 'Kolom :attribute boleh kosong.',
     'required' => 'Kolom :attribute wajib diisi.',
     'required_if' => 'Kolom :attribute wajib diisi bila :other adalah :value.',
+    'required_with' => 'Kolom :attribute wajib diisi bila :values ada.',
     'size' => [
         'numeric' => 'Kolom :attribute harus berukuran :size.',
         'file' => 'Kolom :attribute harus berukuran :size kilobita.',
@@ -33,6 +36,7 @@ return [
     ],
     'string' => 'Kolom :attribute harus berupa string.',
     'unique' => ':attribute ini sudah terdaftar.',
+    'uploaded' => 'Kolom :attribute gagal diunggah.',
 
     'numeric' => 'Kolom :attribute harus berupa angka.',
     'min' => [

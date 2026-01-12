@@ -19,7 +19,7 @@ class EnsureTncIsAccepted
         $user = Auth::user();
 
         // DIPERBAIKI: Cek jika user adalah 'calon_santri' DAN belum menyetujui T&C
-        if ($user && $user->role === 'calon_santri' && ! $user->accepted_tnc_at) {
+        if ($user && $user->role !== 'admin' && ! $user->accepted_tnc_at) {
 
             // Daftar rute yang diizinkan untuk diakses sebelum menyetujui T&C
             $allowedRoutes = [

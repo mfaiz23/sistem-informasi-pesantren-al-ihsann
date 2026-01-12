@@ -5,11 +5,11 @@
     no_telp: '{{ old('no_telp', optional($formulir)->user->no_telp ?? Auth::user()->no_telp) }}',
     nama_panggilan: '{{ old('nama_panggilan', optional($formulir)->nama_panggilan ?? '') }}',
     tempat_lahir: '{{ old('tempat_lahir', optional($formulir)->tempat_lahir ?? '') }}',
-    tanggal_lahir: '{{ old('tanggal_lahir', optional($formulir)->tanggal_lahir ?? '') }}',
+    tanggal_lahir: '{{ old('tanggal_lahir', optional($formulir)->tanggal_lahir?->format('Y-m-d') ?? '') }}',
     jenis_kelamin: '{{ old('jenis_kelamin', optional($formulir)->jenis_kelamin ?? '') }}',
     nik: '{{ old('nik', optional($formulir)->nik ?? '') }}',
     kategori: '{{ old('kategori_pendaftaran', optional($formulir)->kategori_pendaftaran ?? 'Reguler') }}',
-    no_kip: '{{ old('no_kip', optional($formulir)->no_kip ?? '') }}',
+    no_kip: '{{ old('no_kip', optional(optional($formulir)->kipDocument)->no_kip ?? '') }}',
     dokumen_kip: null,
     isKipFilled() {
         if (this.kategori !== 'Non-Reguler') return true;
@@ -27,19 +27,26 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
 
+        {{-- Nama Lengkap --}}
         <div>
             <x-input-label for="name" value="Nama Lengkap" />
             <x-text-input id="name" type="text" name="name" class="mt-1 block w-full" :value="old('name', optional($formulir)->user->name ?? Auth::user()->name)" required x-model="nama_lengkap"
                 :disabled="$disabled" />
             <p x-show="!nama_lengkap" class="text-xs text-red-600 mt-1" style="display: none;">*Wajib diisi</p>
+            <x-input-error :messages="$errors->get('name')" class="mt-2" />
         </div>
+
+        {{-- Nama Panggilan --}}
         <div>
             <x-input-label for="nama_panggilan" value="Nama Panggilan" />
             <x-text-input id="nama_panggilan" type="text" name="nama_panggilan" class="mt-1 block w-full"
                 :value="old('nama_panggilan', optional($formulir)->nama_panggilan ?? '')" required
                 placeholder="Masukkan Nama Panggilan" :disabled="$disabled" x-model="nama_panggilan" />
             <p x-show="!nama_panggilan" class="text-xs text-red-600 mt-1" style="display: none;">*Wajib diisi</p>
+            <x-input-error :messages="$errors->get('nama_panggilan')" class="mt-2" />
         </div>
+
+        {{-- Tempat & Tanggal Lahir --}}
         <div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
@@ -52,12 +59,17 @@
                 <div>
                     <x-input-label for="tanggal_lahir" value="Tanggal Lahir" />
                     <x-text-input id="tanggal_lahir" type="date" name="tanggal_lahir" class="mt-1 block w-full"
-                        :value="old('tanggal_lahir', optional($formulir)->tanggal_lahir ?? '')" required
-                        :disabled="$disabled" x-model="tanggal_lahir" />
-                    <p x-show="!tanggal_lahir" class="text-xs text-red-600 mt-1" style="display: none;">*Wajib diisi</p>
+                        :value="old('tanggal_lahir', optional($formulir)->tanggal_lahir?->format('Y-m-d') ?? '')"
+                        required :disabled="$disabled" x-model="tanggal_lahir" />
+                    <p x-show="!tanggal_lahir" class="text-xs text-red-600 mt-1" style="display: none;">*Wajib diisi
+                    </p>
                 </div>
             </div>
+            <x-input-error :messages="$errors->get('tempat_lahir')" class="mt-2" />
+            <x-input-error :messages="$errors->get('tanggal_lahir')" class="mt-2" />
         </div>
+
+        {{-- Jenis Kelamin --}}
         <div>
             <x-input-label value="Jenis Kelamin" class="mb-2" />
             <div class="flex items-center space-x-6 mt-1">
@@ -74,19 +86,28 @@
             </div>
             <p x-show="!jenis_kelamin" class="text-xs text-red-600 mt-1" style="display: none;">*Data pilih salah satu
             </p>
+            <x-input-error :messages="$errors->get('jenis_kelamin')" class="mt-2" />
         </div>
+
+        {{-- NIK --}}
         <div>
             <x-input-label for="nik" value="Nomor Induk Kependudukan (NIK)" />
             <x-text-input id="nik" type="text" name="nik" class="mt-1 block w-full" :value="old('nik', optional($formulir)->nik ?? '')" required placeholder="Masukkan 16 digit NIK" maxlength="16"
-                :disabled="$disabled" x-model="nik" />
+                :disabled="$disabled" x-model="nik" oninput="this.value = this.value.replace(/[^0-9]/g, '');" />
             <p x-show="!nik" class="text-xs text-red-600 mt-1" style="display: none;">*Wajib diisi</p>
+            <x-input-error :messages="$errors->get('nik')" class="mt-2" />
         </div>
+
+        {{-- No. Telp --}}
         <div>
             <x-input-label for="no_telp" value="Nomor Handphone/WhatsApp" />
             <x-text-input id="no_telp" type="tel" name="no_telp" class="mt-1 block w-full" :value="old('no_telp', optional($formulir)->user->no_telp ?? Auth::user()->no_telp)" required x-model="no_telp"
-                :disabled="$disabled" />
+                :disabled="$disabled" oninput="this.value = this.value.replace(/[^0-9]/g, '');" />
             <p x-show="!no_telp" class="text-xs text-red-600 mt-1" style="display: none;">*Wajib diisi</p>
+            <x-input-error :messages="$errors->get('no_telp')" class="mt-2" />
         </div>
+
+        {{-- Kategori Pendaftaran --}}
         <div>
             <x-input-label value="Kategori Pendaftaran" class="mb-2" />
             <div class="flex items-center space-x-6 mt-1">
@@ -102,7 +123,10 @@
                 </label>
             </div>
             <p x-show="!kategori" class="text-xs text-red-600 mt-1" style="display: none;">*Data pilih salah satu</p>
+            <x-input-error :messages="$errors->get('kategori_pendaftaran')" class="mt-2" />
         </div>
+
+        {{-- Email --}}
         <div>
             <x-input-label for="email" value="Email" />
             <x-text-input id="email" type="email" class="mt-1 block w-full bg-gray-100 cursor-not-allowed"
@@ -115,9 +139,11 @@
                 <div>
                     <x-input-label for="no_kip" value="Nomor Kartu Indonesia Pintar (KIP)" />
                     <x-text-input id="no_kip" type="text" name="no_kip" class="mt-1 block w-full" x-model="no_kip"
-                        placeholder="Masukkan No KIP" :disabled="$disabled" />
+                        placeholder="Masukkan 14 digit No KIP" :disabled="$disabled" maxlength="14"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '');" />
                     <p x-show="!no_kip && !{{ $disabled ? 'true' : 'false' }}" class="text-xs text-red-600 mt-1">*Wajib
                         diisi</p>
+                    <x-input-error :messages="$errors->get('no_kip')" class="mt-2" />
                 </div>
                 <div>
                     <x-input-label for="dokumen_kip" value="Unggah Dokumen KIP" />
@@ -130,7 +156,7 @@
                             'bg-gray-100' => $disabled,
                         ])>
                             <div class="text-sm text-gray-700 px-3 truncate">
-                                <span x-show="dokumen_kip" x-text="dokumen_kip.name"></span>
+                                <span x-show="dokumen_kip" x-text="dokumen_kip ? dokumen_kip.name : ''"></span>
                                 @if (isset($formulir) && $formulir->kipDocument)
                                     <a href="{{ asset('storage/' . $formulir->kipDocument->dokumen_path) }}" target="_blank"
                                         x-show="!dokumen_kip" class="hover:text-blue-600 transition">
@@ -151,6 +177,7 @@
                         </div>
                         <p class="mt-1 text-xs text-gray-500">Catatan: Format yang didukung (JPG,JPEG,PNG,PDF) dan Max
                             size 5MB</p>
+                        <x-input-error :messages="$errors->get('dokumen_kip')" class="mt-2" />
                     </div>
                 </div>
             </div>

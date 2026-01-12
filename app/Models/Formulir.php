@@ -15,10 +15,24 @@ class Formulir extends Model
     protected $fillable = [
         'user_id', 'nama_panggilan', 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 'nik',
         'kategori_pendaftaran',
-        'no_kip',
+        'no_kip', 'status_pendaftaran',
+        'dokumen_ktp',
+        'dokumen_kk',
+        'dokumen_ijazah',
         'asal_sd', 'tahun_lulus_sd', 'asal_smp', 'tahun_lulus_smp',
         'asal_sma', 'tahun_lulus_sma', 'asal_universitas', 'jurusan', 'fakultas',
         'semester', 'angkatan', 'status_pendaftaran',
+    ];
+
+    /**
+     * Menetapkan nilai default untuk atribut model.
+     * Setiap record Formulir baru akan otomatis memiliki status ini.
+     * INI ADALAH PENAMBAHANNYA.
+     *
+     * @var array
+     */
+    protected $attributes = [
+        'status_pendaftaran' => 'menunggu_verifikasi',
     ];
 
     protected $casts = [
